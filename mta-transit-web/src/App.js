@@ -10,6 +10,7 @@ function App() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
+    // Fetch data from the API endpoint
     axios.get(`${api.base}/nyct%2Fgtfs-ace`, {
         headers: {
           'x-api-key': api.key,
@@ -18,6 +19,7 @@ function App() {
       })
 
       .then((response) => {
+        // Convert response data to a binary buffer
         const buffer = Buffer.from(response.data, 'binary');
 
         // Parse the data from protobuf buffer
@@ -26,6 +28,8 @@ function App() {
         // Access the decoded message from the feed
         console.log(feed);
         console.log('Receiving Data');
+
+        // Update the state with the feed entities
         setData(feed.entity);
       })
 

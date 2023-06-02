@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import "leaflet/dist/leaflet.css";
+import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 
 import { api } from './api';
 
@@ -41,8 +43,28 @@ function App() {
 
   const stopData = info.data;
 
+  function handleMapMove(event) {
+    console.log("inside", event.target.getCenter());
+  }
+
+  function MapEvents() {
+    useMapEvents({
+      moveend: handleMapMove
+    });
+
+    return null;
+  }
+
   return (
     <div>
+      <MapContainer center={[40.762972,-73.981823]} zoom={13}>
+        <MapEvents /> 
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+      </MapContainer>
+      
       <div className='buttonContainer'>
         <button onClick={() => window.location.reload()}>Refresh</button>
       </div>

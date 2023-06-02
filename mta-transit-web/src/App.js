@@ -1,49 +1,81 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Buffer } from 'buffer';
 
-import {api} from './api.js';
-
-var GtfsRealtimeBindings = require('gtfs-realtime-bindings');
+import { api } from './api';
 
 function App() {
-  const [data, setData] = useState([]);
+  const [info, setInfo] = useState({ data: [], updated: '' });
 
   useEffect(() => {
-    // Fetch data from the API endpoint
-    axios.get(`${api.base}/nyct%2Fgtfs-ace`, {
-        headers: {
-          'x-api-key': api.key,
-        },
-        responseType: 'arraybuffer',
-      })
-
-      .then((response) => {
-        // Convert response data to a binary buffer
-        const buffer = Buffer.from(response.data, 'binary');
-
-        // Parse the data from protobuf buffer
-        const feed = GtfsRealtimeBindings.transit_realtime.FeedMessage.decode(buffer);
-
-        // Access the decoded message from the feed
-        console.log(feed);
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${api.base}/by-location?lat=40.762972&lon=-73.981823`);
+        console.log(response.data);
         console.log('Receiving Data');
-
-        // Update the state with the feed entities
-        setData(feed.entity);
-      })
-
-      .catch((error) => {
+        setInfo(response.data);
+      } catch (error) {
         console.log('Error: ' + error.message);
-      });
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 30000); // Fetch data every 30 seconds
+
+    return () => {
+      clearInterval(interval); // Clean up interval on component unmount
+    };
   }, []);
+
+  const getElapsedTime = () => {
+    const updatedTime = new Date(info.updated);
+    const currentTime = new Date();
+    const elapsedSeconds = Math.floor((currentTime - updatedTime) / 1000);
+
+    if (elapsedSeconds < 60) {
+      return `${elapsedSeconds} seconds ago`;
+    } else {
+      const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+      return `${elapsedMinutes} minute${elapsedMinutes !== 1 ? 's' : ''} ago`;
+    }
+  };
+
+  const stopData = info.data;
 
   return (
     <div>
+      <div className='buttonContainer'>
+        <button onClick={() => window.location.reload()}>Refresh</button>
+      </div>
+
       <h1>MTA GTFS Realtime API</h1>
       <h2>Feed Entities</h2>
-      {data.map((entity, index) => (
-        <p key={index}>{JSON.stringify(entity)}</p>
+
+      <p>Last Updated Time: {getElapsedTime()}</p>
+
+      {stopData.map((stop) => (
+        <div key={stop.id} className='eachStop'>
+          <p>Stop Name: {stop.name}</p>
+          <p>Routes: {stop.routes.join(', ')}</p>
+          <p>Location: {stop.location.join(', ')}</p>
+          <p>Stops:</p>
+
+          <p>Upcoming N Routes:</p>
+          <ul>
+            {stop.N.slice(0, 5).map((route, index) => (
+              <li key={index}>
+                Route: {route.route}, Time: {route.time}
+              </li>
+            ))}
+          </ul>
+          <p>Upcoming S Routes:</p>
+          <ul>
+            {stop.S.slice(0, 5).map((route, index) => (
+              <li key={index}>
+                Route: {route.route}, Time: {route.time}
+              </li>
+            ))}
+          </ul>
+        </div>
       ))}
     </div>
   );

@@ -8,13 +8,14 @@ import { api } from './api';
 
 function App() {
   const [info, setInfo] = useState({ data: [], updated: '' });
+  const [mapCenter, setMapCenter] = useState({ latitude: 40.762972, longitude: -73.981823 });
   const mapRef = useRef(null);
 
+  // Function to fetch data from the API
   const fetchData = useCallback(async (latitude, longitude) => {
     try {
       const response = await axios.get(`${api.base}/by-location?lat=${latitude}&lon=${longitude}`);
       console.log(response.data);
-      console.log('Receiving Data');
       setInfo(response.data);
     } catch (error) {
       console.log('Error: ' + error.message);
@@ -22,11 +23,13 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Get user's current location and fetch data
     const getLocation = () => {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
+            setMapCenter({ latitude, longitude });
             fetchData(latitude, longitude);
           },
           (error) => {
@@ -38,15 +41,20 @@ function App() {
       }
     };
 
-    getLocation();
+    // Get user's current location and fetch data
 
-    const interval = setInterval(getLocation, 30000); // Fetch data every 30 seconds
+    // Set interval to fetch data every 10 seconds
+    const interval = setInterval(() => {
+      fetchData(mapCenter.latitude, mapCenter.longitude);
+    }, 1000);
 
+    // Clean up interval on component unmount
     return () => {
-      clearInterval(interval); // Clean up interval on component unmount
+      clearInterval(interval);
     };
-  }, [fetchData]);
+  }, [fetchData, mapCenter.latitude, mapCenter.longitude]);
 
+  // Function to calculate elapsed time since last updated
   const getElapsedTime = () => {
     const updatedTime = new Date(info.updated);
     const currentTime = new Date();
@@ -60,14 +68,18 @@ function App() {
     }
   };
 
+  // Destructure data from state
   const stopData = info.data;
 
+  // Event handler for map move
   function handleMapMove(event) {
     const { lat, lng } = event.target.getCenter();
-    console.log("inside", lat, lng);
-    fetchData(lat, lng); // Fetch data when map moves
+    console.log("Map Coordinates:", lat, lng);
+    setMapCenter({ latitude: lat, longitude: lng });
+    fetchData(lat, lng);
   }
 
+  // Component for map events
   function MapEvents() {
     useMapEvents({
       moveend: handleMapMove
@@ -76,6 +88,7 @@ function App() {
     return null;
   }
 
+  // Function to move to the user's current location
   function moveToCurrentLocation() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -83,6 +96,7 @@ function App() {
           const { latitude, longitude } = position.coords;
           const map = mapRef.current;
           map.setView([latitude, longitude]);
+          setMapCenter({ latitude, longitude });
           fetchData(latitude, longitude);
         },
         (error) => {
@@ -94,12 +108,27 @@ function App() {
     }
   }
 
+// Function to calculate remaining time until train arrival
+const getRemainingTime = (time) => {
+  const remainingSeconds = Math.max(0, Math.floor((new Date(time) - Date.now()) / 1000));
+
+  if (remainingSeconds === 0) {
+    return "BOARDING";
+  } else if (remainingSeconds < 60) {
+    return `${remainingSeconds} seconds`;
+  } else {
+    const remainingMinutes = Math.floor(remainingSeconds / 60);
+    return `${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
+  }
+};
+
+
   return (
-    <div>
+    <div className="simulate-mobile">
       <div className="red-marker-image">
         <img src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-2x-red.png" alt="Red Marker" />
       </div>
-      <MapContainer ref={mapRef} center={[40.762972, -73.981823]} zoom={13}>
+      <MapContainer ref={mapRef} center={[mapCenter.latitude, mapCenter.longitude]} zoom={13}>
         <MapEvents /> 
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -131,34 +160,30 @@ function App() {
       
       <div className='buttonContainer'>
         <button onClick={moveToCurrentLocation}>Move to Current Location</button>
-        <button onClick={() => fetchData(40.762972, -73.981823)}>Refresh</button>
       </div>
 
       <h1>MTA GTFS Realtime API</h1>
-      <h2>Feed Entities</h2>
 
       <p>Last Updated Time: {getElapsedTime()}</p>
 
       {stopData.map((stop) => (
         <div key={stop.id} className='eachStop'>
-          <p>Stop Name: {stop.name}</p>
+          <h2>Stop Name: {stop.name}</h2>
           <p>Routes: {stop.routes.join(', ')}</p>
-          <p>Location: {stop.location.join(', ')}</p>
-          <p>Stops:</p>
 
           <p>Upcoming N Routes:</p>
           <ul>
-            {stop.N.slice(0, 5).map((route, index) => (
+            {stop.N.slice(0, 2).map((route, index) => (
               <li key={index}>
-                Route: {route.route}, Time: {route.time}
+                Route: {route.route}, Time: {getRemainingTime(route.time)}
               </li>
             ))}
           </ul>
           <p>Upcoming S Routes:</p>
           <ul>
-            {stop.S.slice(0, 5).map((route, index) => (
+            {stop.S.slice(0, 2).map((route, index) => (
               <li key={index}>
-                Route: {route.route}, Time: {route.time}
+                Route: {route.route}, Time: {getRemainingTime(route.time)}
               </li>
             ))}
           </ul>

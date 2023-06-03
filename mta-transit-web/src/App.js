@@ -1,32 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import "leaflet/dist/leaflet.css";
-import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
-
+import L from "leaflet";
+import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from "react-leaflet";
+import stationsData from "./stations.json";
 import { api } from './api';
 
 function App() {
   const [info, setInfo] = useState({ data: [], updated: '' });
+  const mapRef = useRef(null);
+
+  const fetchData = useCallback(async (latitude, longitude) => {
+    try {
+      const response = await axios.get(`${api.base}/by-location?lat=${latitude}&lon=${longitude}`);
+      console.log(response.data);
+      console.log('Receiving Data');
+      setInfo(response.data);
+    } catch (error) {
+      console.log('Error: ' + error.message);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${api.base}/by-location?lat=40.762972&lon=-73.981823`);
-        console.log(response.data);
-        console.log('Receiving Data');
-        setInfo(response.data);
-      } catch (error) {
-        console.log('Error: ' + error.message);
+    const getLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            fetchData(latitude, longitude);
+          },
+          (error) => {
+            console.log('Error getting location:', error.message);
+          }
+        );
+      } else {
+        console.log('Geolocation is not supported by this browser.');
       }
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 30000); // Fetch data every 30 seconds
+    getLocation();
+
+    const interval = setInterval(getLocation, 30000); // Fetch data every 30 seconds
 
     return () => {
       clearInterval(interval); // Clean up interval on component unmount
     };
-  }, []);
+  }, [fetchData]);
 
   const getElapsedTime = () => {
     const updatedTime = new Date(info.updated);
@@ -44,7 +63,9 @@ function App() {
   const stopData = info.data;
 
   function handleMapMove(event) {
-    console.log("inside", event.target.getCenter());
+    const { lat, lng } = event.target.getCenter();
+    console.log("inside", lat, lng);
+    fetchData(lat, lng); // Fetch data when map moves
   }
 
   function MapEvents() {
@@ -55,18 +76,59 @@ function App() {
     return null;
   }
 
+  function moveToCurrentLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const map = mapRef.current;
+          map.setView([latitude, longitude]);
+          fetchData(latitude, longitude);
+        },
+        (error) => {
+          console.log('Error getting location:', error.message);
+        }
+      );
+    } else {
+      console.log('Geolocation is not supported by this browser.');
+    }
+  }
+
   return (
     <div>
-      <MapContainer center={[40.762972,-73.981823]} zoom={13}>
+      <MapContainer ref={mapRef} center={[40.762972, -73.981823]} zoom={13}>
         <MapEvents /> 
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        {/* Render markers for each station */}
+        {Object.values(stationsData).map(station => (
+          <Marker
+            key={station.id}
+            position={station.location}
+            icon={
+              L.icon({
+                iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+              })
+            }
+          >
+            <Popup>
+              <p>Station Name: {station.name}</p>
+              <p>Location: {station.location.join(', ')}</p>
+            </Popup>
+          </Marker>
+        ))}
       </MapContainer>
       
       <div className='buttonContainer'>
-        <button onClick={() => window.location.reload()}>Refresh</button>
+        <button onClick={moveToCurrentLocation}>Move to Current Location</button>
+        <button onClick={() => fetchData(40.762972, -73.981823)}>Refresh</button>
       </div>
 
       <h1>MTA GTFS Realtime API</h1>

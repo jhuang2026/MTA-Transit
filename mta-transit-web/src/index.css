@@ -17,5 +17,19 @@ body {
 
 .leaflet-container {
     height: 50vh;
-    width: 100vw;
+    width: 95vh;
+    margin: 0 auto;
   }
+
+.marker {
+    border: none;
+    background-color: transparent;
+  }
+  
+.marker .leaflet-interactive {
+background-color: red;
+border-radius: 50%;
+width: 10px;
+height: 10px;
+}
+  

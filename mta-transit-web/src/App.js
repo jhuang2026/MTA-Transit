@@ -96,6 +96,9 @@ function App() {
 
   return (
     <div>
+      <div className="red-marker-image">
+        <img src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-2x-red.png" alt="Red Marker" />
+      </div>
       <MapContainer ref={mapRef} center={[40.762972, -73.981823]} zoom={13}>
         <MapEvents /> 
         <TileLayer

@@ -16,9 +16,10 @@ body {
 }
 
 .leaflet-container {
+    position: relative;
     height: 50vh;
     width: 95vh;
-    margin: 0 auto;
+    margin: 20px auto;
   }
 
 .marker {
@@ -33,3 +34,10 @@ width: 10px;
 height: 10px;
 }
   
+.red-marker-image {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.55); /* Adjust the scale value as desired */
+    z-index: 9999;
+  }

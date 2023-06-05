@@ -18,14 +18,6 @@ body {
     color: white;
 }
 
-/* For className='eachStop' in App.js, set white background color  */
-.eachStop {
-    background-color: #2b2d42;
-    margin: 20px 0px;
-    padding-left: 15px;
-    
-}
-
 .leaflet-container {
     position: relative;
     height: 50vh;
@@ -56,4 +48,17 @@ height: 10px;
 .buttonContainer {
     margin-bottom: 15px;
     margin-left: 5px;
+}
+
+/* For className='eachStop' in App.js, set white background color  */
+.eachStop {
+    background-color: #2b2d42;
+    margin: 15px 0px;
+    padding-left: 15px;
+    padding-top: 10px;
+    padding-bottom: 1px;
+}
+
+.stationData {
+    margin: 15px 10px;
 }

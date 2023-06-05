@@ -23,27 +23,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Get user's current location and fetch data
-    const getLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setMapCenter({ latitude, longitude });
-            fetchData(latitude, longitude);
-          },
-          (error) => {
-            console.log('Error getting location:', error.message);
-          }
-        );
-      } else {
-        console.log('Geolocation is not supported by this browser.');
-      }
-    };
-
-    // Get user's current location and fetch data
-
-    // Set interval to fetch data every 10 seconds
+    // Set interval to fetch data every 1 second
+    // Causes the intial delay of 1 second (when applicaiton opens) before data is fetched
     const interval = setInterval(() => {
       fetchData(mapCenter.latitude, mapCenter.longitude);
     }, 1000);
@@ -82,12 +63,13 @@ function App() {
   // Component for map events
   function MapEvents() {
     useMapEvents({
-      moveend: handleMapMove
+      moveend: handleMapMove,
+      zoomstart: handleMapMove
     });
 
     return null;
   }
-
+  
   // Function to move to the user's current location
   function moveToCurrentLocation() {
     if (navigator.geolocation) {
@@ -108,20 +90,19 @@ function App() {
     }
   }
 
-// Function to calculate remaining time until train arrival
-const getRemainingTime = (time) => {
-  const remainingSeconds = Math.max(0, Math.floor((new Date(time) - Date.now()) / 1000));
+  // Function to calculate remaining time until train arrival
+  const getRemainingTime = (time) => {
+    const remainingSeconds = Math.max(0, Math.floor((new Date(time) - Date.now()) / 1000));
 
-  if (remainingSeconds === 0) {
-    return "BOARDING";
-  } else if (remainingSeconds < 60) {
-    return `${remainingSeconds} seconds`;
-  } else {
-    const remainingMinutes = Math.floor(remainingSeconds / 60);
-    return `${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
-  }
-};
-
+    if (remainingSeconds === 0) {
+      return "BOARDING";
+    } else if (remainingSeconds < 60) {
+      return `${remainingSeconds} seconds`;
+    } else {
+      const remainingMinutes = Math.floor(remainingSeconds / 60);
+      return `${remainingMinutes}m${remainingMinutes !== 1 ? 's' : ''}`;
+    }
+  };
 
   return (
     <div className="simulate-mobile">
@@ -168,27 +149,33 @@ const getRemainingTime = (time) => {
 
       {stopData.map((stop) => (
         <div key={stop.id} className='eachStop'>
-          <h2>Stop Name: {stop.name}</h2>
-          <p>Routes: {stop.routes.join(', ')}</p>
+          <h2>{stop.name}</h2>
+          <h4>Routes: {stop.routes.join(', ')}</h4>
 
-          <p>Upcoming N Routes:</p>
-          <ul>
-            {stop.N.slice(0, 2).map((route, index) => (
-              <li key={index}>
-                Route: {route.route}, Time: {getRemainingTime(route.time)}
-              </li>
-            ))}
-          </ul>
-          <p>Upcoming S Routes:</p>
-          <ul>
-            {stop.S.slice(0, 2).map((route, index) => (
-              <li key={index}>
-                Route: {route.route}, Time: {getRemainingTime(route.time)}
-              </li>
-            ))}
-          </ul>
+          <div className='stationData'>
+            <p>Direction: {stationsData[stop.id]?.north_direction}</p>
+            <ul>
+              {stop.N.slice(0, 2).map((route, index) => (
+                <li key={index}>
+                  Route: {route.route}, Time: {getRemainingTime(route.time)}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className='stationData'>
+            <p>Direction: {stationsData[stop.id]?.south_direction}</p>
+            <ul>
+              {stop.S.slice(0, 2).map((route, index) => (
+                <li key={index}>
+                  Route: {route.route}, Time: {getRemainingTime(route.time)}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       ))}
+
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function Directory() {
   // Define the list of stops
@@ -29,15 +30,31 @@ function Directory() {
   ];
 
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const toStationInfo = (name) => {
     navigate('/station-info', { state: name });
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredStops = stops.filter((stop) =>
+    stop.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       <h1>List of Stops</h1>
-      {stops.map((stop, index) => (
+      <input
+        type="text"
+        placeholder="Search route..."
+        value={searchTerm}
+        onChange={handleSearchChange}
+        style={{ marginBottom: '10px' }}
+      />
+      {filteredStops.map((stop, index) => (
         <div
           key={index}
           onClick={() => toStationInfo(stop.name)}
@@ -53,6 +70,11 @@ function Directory() {
           {stop.name}
         </div>
       ))}
+
+      <Link to="/" className="buttonContainer">
+        <button>Go to Home</button>
+      </Link>
+
     </div>
   );
 }

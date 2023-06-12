@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import MapScreen from './MapScreen';
-import FavoritesScreen from './FavoritesScreen';
-import BrowseScreen from './BrowseScreen';
-import SettingsScreen from './SettingsScreen';
-import StationInfoScreen from './StationInfoScreen';
+import React, { useState } from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { Image } from "react-native";
+import MapScreen from "./MapScreen";
+import FavoritesScreen from "./FavoritesScreen";
+import BrowseScreen from "./BrowseScreen";
+import SettingsScreen from "./SettingsScreen";
+import StationInfoScreen from "./StationInfoScreen";
 
 const Tab = createBottomTabNavigator();
 
 const BrowseStack = createStackNavigator();
 
 const BrowseStackScreen = () => (
-  <BrowseStack.Navigator>
+  <BrowseStack.Navigator screenOptions={{ headerShown: false }}>
     <BrowseStack.Screen name="AllStations" component={BrowseScreen} />
     <BrowseStack.Screen name="StationInfo" component={StationInfoScreen} />
   </BrowseStack.Navigator>
@@ -30,7 +31,27 @@ function AppNavigator() {
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
-          screenProps: { isDarkModeEnabled }, // Pass the isDarkModeEnabled prop to each screen
+          tabBarIcon: ({ color, focused }) => {
+            let iconName;
+            let iconSize = focused ? 23 : 20;
+
+            if (route.name === "Map") {
+              iconName = require("./assets/map_icon.png");
+            } else if (route.name === "Favorites") {
+              iconName = require("./assets/favorites_icon.png");
+            } else if (route.name === "Browse") {
+              iconName = require("./assets/browse_icon.png");
+            } else if (route.name === "Settings") {
+              iconName = require("./assets/settings_icon.png");
+            }
+
+            return (
+              <Image
+                source={iconName}
+                style={{ tintColor: color, width: iconSize, height: iconSize }}
+              />
+            );
+          },
         })}
       >
         <Tab.Screen name="Map" component={MapScreen} />
@@ -42,7 +63,6 @@ function AppNavigator() {
           name="Settings"
           component={SettingsScreen}
           options={{
-            // Pass the isDarkModeEnabled state and handleDarkModeChange function as screenParams
             screenParams: { isDarkModeEnabled, handleDarkModeChange },
           }}
         />

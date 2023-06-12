@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRoute } from '@react-navigation/native';
-import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native';
-import { api } from './components/api';
-import stationsData from './assets/stations.json';
+import React, { useState, useEffect, useCallback } from "react";
+import { useRoute } from "@react-navigation/native";
+import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
+import { api } from "./components/api";
+import stationsData from "./assets/stations.json";
 
 const Station = ({ station, stopData }) => {
   const getRemainingTime = (time) => {
@@ -12,12 +12,12 @@ const Station = ({ station, stopData }) => {
     );
 
     if (remainingSeconds === 0) {
-      return 'BOARDING';
+      return "BOARDING";
     } else if (remainingSeconds < 60) {
       return `${remainingSeconds} seconds`;
     } else {
       const remainingMinutes = Math.floor(remainingSeconds / 60);
-      return `${remainingMinutes}m${remainingMinutes !== 1 ? 's' : ''}`;
+      return `${remainingMinutes} minutes`;
     }
   };
 
@@ -48,16 +48,18 @@ const Station = ({ station, stopData }) => {
 
 function StationInfoScreen() {
   const route = useRoute();
-  const [info, setInfo] = useState({ data: [], updated: '' });
-  const [searchTerm, setSearchTerm] = useState('');
+  const [info, setInfo] = useState({ data: [], updated: "" });
+  const [searchTerm, setSearchTerm] = useState("");
 
   const fetchData = useCallback(async () => {
     try {
-      const response = await fetch(`${api.base}/by-route/${route.params.state}`);
+      const response = await fetch(
+        `${api.base}/by-route/${route.params.state}`
+      );
       const data = await response.json();
       setInfo(data);
     } catch (error) {
-      console.log('Error: ' + error.message);
+      console.log("Error: " + error.message);
     }
   }, [route.params.state]);
 
@@ -104,29 +106,29 @@ function StationInfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     padding: 20,
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   searchInput: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
   },
   eachStop: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginBottom: 20,
     padding: 10,
     borderRadius: 10,
   },
   stationName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   stationData: {
     marginTop: 10,

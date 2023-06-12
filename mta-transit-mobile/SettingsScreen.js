@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Switch } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Switch } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 function SettingsScreen() {
   const navigation = useNavigation();
@@ -47,37 +47,93 @@ function SettingsScreen() {
 
   return (
     <View style={[styles.container, isDarkModeEnabled && styles.containerDark]}>
-      <Text style={[styles.title, isDarkModeEnabled && styles.titleDark]}>Settings</Text>
+      <Text style={[styles.title, isDarkModeEnabled && styles.titleDark]}>
+        Settings
+      </Text>
 
-      <Text style={[styles.sectionTitle, isDarkModeEnabled && styles.sectionTitleDark]}>City</Text>
+      <Text
+        style={[
+          styles.sectionTitle,
+          isDarkModeEnabled && styles.sectionTitleDark,
+        ]}
+      >
+        City
+      </Text>
       <TouchableOpacity style={styles.button} onPress={handleCityPress}>
         <Text style={styles.buttonText}>New York City</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.sectionTitle, isDarkModeEnabled && styles.sectionTitleDark]}>Appearance</Text>
-      <View style={[styles.appearanceContainer, isDarkModeEnabled && styles.appearanceContainerDark]}>
-        <Text style={isDarkModeEnabled && styles.appearanceTextDark}>Dark Mode</Text>
+      <Text
+        style={[
+          styles.sectionTitle,
+          isDarkModeEnabled && styles.sectionTitleDark,
+        ]}
+      >
+        Appearance
+      </Text>
+      <View
+        style={[
+          styles.appearanceContainer,
+          isDarkModeEnabled && styles.appearanceContainerDark,
+        ]}
+      >
+        <Text style={isDarkModeEnabled && styles.appearanceTextDark}>
+          Dark Mode
+        </Text>
         <Switch value={isDarkModeEnabled} onValueChange={toggleDarkMode} />
       </View>
 
-      <Text style={[styles.sectionTitle, isDarkModeEnabled && styles.sectionTitleDark]}>Spread the Word</Text>
+      <Text
+        style={[
+          styles.sectionTitle,
+          isDarkModeEnabled && styles.sectionTitleDark,
+        ]}
+      >
+        Spread the Word
+      </Text>
       <TouchableOpacity style={styles.button} onPress={handleRateAppPress}>
         <Text style={styles.buttonText}>Rate App</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleShareWithFriendsPress}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleShareWithFriendsPress}
+      >
         <Text style={styles.buttonText}>Share with Friends</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.sectionTitle, isDarkModeEnabled && styles.sectionTitleDark]}>Proximity Pro</Text>
-      <TouchableOpacity style={styles.button} onPress={handleUpgradeRemoveAdsPress}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          isDarkModeEnabled && styles.sectionTitleDark,
+        ]}
+      >
+        Proximity Pro
+      </Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleUpgradeRemoveAdsPress}
+      >
         <Text style={styles.buttonText}>Upgrade & Remove Ads</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.sectionTitle, isDarkModeEnabled && styles.sectionTitleDark]}>Manage Permissions</Text>
-      <TouchableOpacity style={styles.button} onPress={handleManagePermissionsPress}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          isDarkModeEnabled && styles.sectionTitleDark,
+        ]}
+      >
+        Manage Permissions
+      </Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleManagePermissionsPress}
+      >
         <Text style={styles.buttonText}>Manage Permissions</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleRestorePurchasesPress}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleRestorePurchasesPress}
+      >
         <Text style={styles.buttonText}>Restore Purchases</Text>
       </TouchableOpacity>
     </View>
@@ -87,54 +143,54 @@ function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     padding: 20,
   },
   containerDark: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   titleDark: {
-    color: 'white',
+    color: "white",
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 20,
     marginBottom: 10,
   },
   sectionTitleDark: {
-    color: 'white',
+    color: "white",
   },
   button: {
-    backgroundColor: '#0099FF',
+    backgroundColor: "#0099FF",
     padding: 10,
     borderRadius: 5,
     marginBottom: 10,
   },
   buttonText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
   },
   appearanceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
   appearanceContainerDark: {
-    borderColor: 'white',
+    borderColor: "white",
     borderBottomWidth: 1,
     paddingBottom: 10,
   },
   appearanceTextDark: {
-    color: 'white',
+    color: "white",
   },
 });
 

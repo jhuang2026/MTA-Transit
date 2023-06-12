@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native';
 import { api } from './components/api';
 import stationsData from './assets/stations.json';
 
@@ -48,7 +48,6 @@ const Station = ({ station, stopData }) => {
 
 function StationInfoScreen() {
   const route = useRoute();
-  const navigation = useNavigation();
   const [info, setInfo] = useState({ data: [], updated: '' });
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -93,13 +92,11 @@ function StationInfoScreen() {
         style={styles.searchInput}
       />
 
-      {filteredStations.map((item, index) => (
-        <Station key={index} station={item} stopData={item} />
-      ))}
-
-      <TouchableOpacity onPress={() => navigation.navigate('Directory')} style={styles.buttonContainer}>
-        <Text>Go to Directory</Text>
-      </TouchableOpacity>
+      <ScrollView>
+        {filteredStations.map((item, index) => (
+          <Station key={index} station={item} stopData={item} />
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -133,13 +130,6 @@ const styles = StyleSheet.create({
   },
   stationData: {
     marginTop: 10,
-  },
-  buttonContainer: {
-    marginTop: 10,
-    backgroundColor: '#ccc',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
   },
 });
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -9,31 +9,43 @@ import SettingsScreen from './SettingsScreen';
 import StationInfoScreen from './StationInfoScreen';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
 
 const BrowseStack = createStackNavigator();
 
 const BrowseStackScreen = () => (
   <BrowseStack.Navigator>
-    <BrowseStack.Screen name="All Stations" component={BrowseScreen} />
-    <BrowseStack.Screen name="Station Info" component={StationInfoScreen} />
+    <BrowseStack.Screen name="AllStations" component={BrowseScreen} />
+    <BrowseStack.Screen name="StationInfo" component={StationInfoScreen} />
   </BrowseStack.Navigator>
 );
 
 function AppNavigator() {
-  const isDarkModeEnabled = false; // Set your initial dark mode state here
+  const [isDarkModeEnabled, setIsDarkModeEnabled] = useState(true);
+
+  const handleDarkModeChange = (newMode) => {
+    setIsDarkModeEnabled(newMode);
+  };
 
   return (
     <NavigationContainer>
       <Tab.Navigator
-        screenOptions={{
+        screenOptions={({ route }) => ({
           screenProps: { isDarkModeEnabled }, // Pass the isDarkModeEnabled prop to each screen
-        }}
+        })}
       >
         <Tab.Screen name="Map" component={MapScreen} />
-        <Tab.Screen name="Favorites" component={FavoritesScreen} />
+        <Tab.Screen name="Favorites">
+          {() => <FavoritesScreen isDarkModeEnabled={isDarkModeEnabled} />}
+        </Tab.Screen>
         <Tab.Screen name="Browse" component={BrowseStackScreen} />
-        <Tab.Screen name="Settings" component={SettingsScreen} />
+        <Tab.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{
+            // Pass the isDarkModeEnabled state and handleDarkModeChange function as screenParams
+            screenParams: { isDarkModeEnabled, handleDarkModeChange },
+          }}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );

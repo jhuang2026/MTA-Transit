@@ -15,21 +15,21 @@ const BrowseStack = createStackNavigator();
 
 const BrowseStackScreen = () => (
   <BrowseStack.Navigator>
-    <BrowseStack.Screen
-      name="Browse"
-      component={BrowseScreen}
-    />
-    <BrowseStack.Screen
-      name="StationInfo"
-      component={StationInfoScreen}
-    />
+    <BrowseStack.Screen name="All Stations" component={BrowseScreen} />
+    <BrowseStack.Screen name="Station Info" component={StationInfoScreen} />
   </BrowseStack.Navigator>
 );
 
 function AppNavigator() {
+  const isDarkModeEnabled = false; // Set your initial dark mode state here
+
   return (
     <NavigationContainer>
-      <Tab.Navigator>
+      <Tab.Navigator
+        screenOptions={{
+          screenProps: { isDarkModeEnabled }, // Pass the isDarkModeEnabled prop to each screen
+        }}
+      >
         <Tab.Screen name="Map" component={MapScreen} />
         <Tab.Screen name="Favorites" component={FavoritesScreen} />
         <Tab.Screen name="Browse" component={BrowseStackScreen} />

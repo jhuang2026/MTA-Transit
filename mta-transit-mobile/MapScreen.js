@@ -1,12 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, Text, View, Button, SafeAreaView, ScrollView } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import stationsData from './assets/stations.json';
 
 export default function MapScreen() {
-  const [info, setInfo] = useState({ data: [], updated: "" });
-  const [mapCenter, setMapCenter] = useState({ latitude: 40.7580, longitude: -73.9855 });
+  const [info, setInfo] = useState({ data: [], updated: '' });
+  const [mapCenter, setMapCenter] = useState({
+    latitude: 40.7580,
+    longitude: -73.9855,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const mapRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async (latitude, longitude) => {
@@ -18,7 +24,7 @@ export default function MapScreen() {
         console.log(data);
         setInfo(data);
       } catch (error) {
-        console.log("Error: " + error.message);
+        console.log('Error: ' + error.message);
       }
     };
 
@@ -34,18 +40,15 @@ export default function MapScreen() {
   }, [mapCenter]);
 
   const getRemainingTime = (time) => {
-    const remainingSeconds = Math.max(
-      0,
-      Math.floor((new Date(time) - Date.now()) / 1000)
-    );
+    const remainingSeconds = Math.max(0, Math.floor((new Date(time) - Date.now()) / 1000));
 
     if (remainingSeconds === 0) {
-      return "BOARDING";
+      return 'BOARDING';
     } else if (remainingSeconds < 60) {
       return `${remainingSeconds} seconds`;
     } else {
       const remainingMinutes = Math.floor(remainingSeconds / 60);
-      return `${remainingMinutes}m${remainingMinutes !== 1 ? "s" : ""}`;
+      return `${remainingMinutes}m${remainingMinutes !== 1 ? 's' : ''}`;
     }
   };
 
@@ -58,42 +61,42 @@ export default function MapScreen() {
       return `${elapsedSeconds} seconds ago`;
     } else {
       const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-      return `${elapsedMinutes} minute${elapsedMinutes !== 1 ? "s" : ""} ago`;
+      return `${elapsedMinutes} minute${elapsedMinutes !== 1 ? 's' : ''} ago`;
     }
   };
 
   const Station = ({ station, stopData }) => {
     const orderRoutes = (routes) => {
       const orderedRoutes = [
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "6X",
-        "7",
-        "7X",
-        "A",
-        "C",
-        "E",
-        "N",
-        "Q",
-        "R",
-        "W",
-        "B",
-        "D",
-        "F",
-        "FS",
-        "M",
-        "L",
-        "G",
-        "J",
-        "Z",
-        "H",
-        "S",
-        "SI",
-        "SS"
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '6X',
+        '7',
+        '7X',
+        'A',
+        'C',
+        'E',
+        'N',
+        'Q',
+        'R',
+        'W',
+        'B',
+        'D',
+        'F',
+        'FS',
+        'M',
+        'L',
+        'G',
+        'J',
+        'Z',
+        'H',
+        'S',
+        'SI',
+        'SS',
       ];
 
       routes.sort((a, b) => {
@@ -108,7 +111,7 @@ export default function MapScreen() {
     return (
       <View style={styles.eachStop}>
         <Text>{station.name}</Text>
-        <Text>Routes: {orderRoutes(station.routes).join(", ")}</Text>
+        <Text>Routes: {orderRoutes(station.routes).join(', ')}</Text>
 
         <View style={styles.stationData}>
           <Text>Direction: {stationsData[station.id]?.north_direction}</Text>
@@ -139,26 +142,35 @@ export default function MapScreen() {
     );
   };
 
+  const zoomIn = () => {
+    mapRef.current?.animateToRegion({
+      latitude: mapCenter.latitude,
+      longitude: mapCenter.longitude,
+      latitudeDelta: mapCenter.latitudeDelta / 2,
+      longitudeDelta: mapCenter.longitudeDelta / 2,
+    });
+  };
+
+  const zoomOut = () => {
+    mapRef.current?.animateToRegion({
+      latitude: mapCenter.latitude,
+      longitude: mapCenter.longitude,
+      latitudeDelta: mapCenter.latitudeDelta * 2,
+      longitudeDelta: mapCenter.longitudeDelta * 2,
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text>Elapsed Time: {getElapsedTime()}</Text>
         <View style={styles.mapContainer}>
           <MapView
+            ref={mapRef}
             style={styles.map}
-            region={{
-              latitude: mapCenter.latitude,
-              longitude: mapCenter.longitude,
-              latitudeDelta: 0.0922,
-              longitudeDelta: 0.0421,
-            }}
+            region={mapCenter}
             showsUserLocation={true}
-            onRegionChangeComplete={(region) => {
-              setMapCenter({
-                latitude: region.latitude,
-                longitude: region.longitude,
-              });
-            }}
+            onRegionChangeComplete={(region) => setMapCenter(region)}
           >
             {Object.values(stationsData).map((station) => (
               <Marker
@@ -171,6 +183,10 @@ export default function MapScreen() {
               />
             ))}
           </MapView>
+          <View style={styles.zoomButtonContainer}>
+            <Button title="+" onPress={zoomIn} />
+            <Button title="-" onPress={zoomOut} />
+          </View>
         </View>
         {info &&
           info.data.map((stop) => (
@@ -208,5 +224,13 @@ const styles = StyleSheet.create({
   },
   stationData: {
     marginTop: 10,
+  },
+  zoomButtonContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

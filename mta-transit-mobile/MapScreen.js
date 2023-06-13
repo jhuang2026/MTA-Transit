@@ -14,7 +14,6 @@ import MapView, { Marker } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import stationsData from "./assets/stations.json";
 import markerIconRed from './assets/marker-icon-red.png';
-import { AntDesign } from "@expo/vector-icons";
 
 export default function MapScreen() {
   const [info, setInfo] = useState({ data: [], updated: "" });
@@ -83,6 +82,14 @@ export default function MapScreen() {
   };
 
   const Station = ({ station, stopData }) => {
+
+    const getCircleSize = (index) => {
+      if (index === 1) {
+        return { width: 65, height: 65 };
+      }
+      return { width: 75, height: 75 };
+    };
+  
     const orderRoutes = (routes) => {
       const orderedRoutes = [
         "1",
@@ -115,31 +122,47 @@ export default function MapScreen() {
         "SI",
         "SS",
       ];
-
+  
       routes.sort((a, b) => {
         const indexA = orderedRoutes.indexOf(a);
         const indexB = orderedRoutes.indexOf(b);
         return indexA - indexB;
       });
-
+  
       return routes;
     };
-
-    const getCircleColor = (time) => {
+  
+    const getRemainingTime = (time) => {
       const remainingSeconds = Math.max(
         0,
         Math.floor((new Date(time) - Date.now()) / 1000)
       );
-
+  
+      if (remainingSeconds === 0) {
+        return "BOARD";
+      } else if (remainingSeconds < 60) {
+        return `${remainingSeconds}s`;
+      } else {
+        const remainingMinutes = Math.floor(remainingSeconds / 60);
+        return `${remainingMinutes}m`;
+      }
+    };
+  
+    const getCircleColor = (time, index) => {
+      const remainingSeconds = Math.max(
+        0,
+        Math.floor((new Date(time) - Date.now()) / 1000)
+      );
+  
       if (remainingSeconds === 0) {
         return "red";
       } else if (remainingSeconds < 60) {
         return "orange";
       } else {
-        return "blue";
+        return index === 1 ? "grey" : "blue";
       }
     };
-
+  
     return (
       <View style={styles.eachStop}>
         <Text style={styles.stationName}>{station.name}</Text>
@@ -159,7 +182,13 @@ export default function MapScreen() {
                   key={index}
                   style={[
                     styles.timeCircle,
-                    { borderColor: getCircleColor(route.time) },
+                    getCircleSize(index),
+                    {
+                      borderColor: getCircleColor(route.time, index),
+                      backgroundColor: index === 0 ? "white" : undefined,
+                      zIndex: index === 0 ? 2 : 1,
+                      marginLeft: index === 1 ? -15 : undefined,
+                    },
                   ]}
                 >
                   <Text style={styles.timeText}>
@@ -169,7 +198,7 @@ export default function MapScreen() {
               ))}
             </View>
           </View>
-    
+  
           <View style={styles.directionContainer}>
             <View style={styles.directionTextContainer}>
               <Text style={styles.directionText}>
@@ -177,27 +206,30 @@ export default function MapScreen() {
               </Text>
             </View>
             <View style={styles.timeContainer}>
-              {stopData.S.slice(0, 2).map((route, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.timeCircle,
-                    { borderColor: getCircleColor(route.time) },
-                  ]}
-                >
-                  <Text style={styles.timeText}>
-                    {getRemainingTime(route.time)}
-                  </Text>
-                </View>
-              ))}
+            {stopData.S.slice(0, 2).map((route, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.timeCircle,
+                  getCircleSize(index, 'S'),
+                  {
+                    borderColor: getCircleColor(route.time, index),
+                    backgroundColor: index === 0 ? "white" : undefined,
+                    zIndex: index === 0 ? 2 : 1,
+                    marginLeft: index === 1 ? -15 : undefined,
+                  },
+                ]}
+              >
+                <Text style={styles.timeText}>{getRemainingTime(route.time)}</Text>
+              </View>
+            ))}
             </View>
           </View>
         </View>
       </View>
     );
   };
-    
-
+  
   const zoomIn = () => {
     mapRef.current?.animateToRegion({
       latitude: mapCenter.latitude,

@@ -10,10 +10,12 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Polyline } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import stationsData from "./assets/stations.json";
 import markerIconRed from './assets/marker-icon-red.png';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import coordinatesData from "./assets/coordinates.json";
 
 export default function MapScreen() {
   const [info, setInfo] = useState({ data: [], updated: "" });
@@ -257,6 +259,63 @@ export default function MapScreen() {
     setMapCenter(region);
   };
 
+  const [polylines, setPolylines] = useState([]);
+  const [displayedCoordinates, setDisplayedCoordinates] = useState('');
+
+  useEffect(() => {
+    const parsedCoordinates = Object.entries(coordinatesData).map(([key, value]) => ({
+      key,
+      coordinates: value.map(([latitude, longitude]) => ({ latitude, longitude })),
+    }));
+    setPolylines(parsedCoordinates);
+    setDisplayedCoordinates(
+      parsedCoordinates
+        .map(({ key, coordinates }) =>
+          `${key}: [${coordinates.map(({ latitude, longitude }) => `{ latitude: ${latitude}, longitude: ${longitude} }`).join(', ')}]`
+        )
+        .join('\n')
+    );
+  }, []);
+
+  const getColorForInitialLetter = (initialLetter) => {
+    switch (initialLetter) {
+      case 'A':
+      case 'C':
+      case 'E':
+        return '#0039A6';
+      case 'B':
+      case 'D':
+      case 'F':
+      case 'M':
+        return '#FF6319';
+      case 'G':
+        return '#6CBE45';
+      case 'J':
+      case 'Z':
+        return '#996633';
+      case 'L':
+        return '#A7A9AC';
+      case 'N':
+      case 'Q':
+      case 'R':
+        return '#FCCC0A';
+      case 'S':
+        return '#808183';
+      case '1':
+      case '2':
+      case '3':
+        return '#EE352E';
+      case '4':
+      case '5':
+      case '6':
+        return '#00933C';
+      case '7':
+        return '#B933AD';
+      default:
+        return '#000000'; // Default color if no matching case is found
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -282,9 +341,29 @@ export default function MapScreen() {
                   longitude: station.location[1],
                 }}
                 title={station.name}
-                pinColor="orange"
-              />
+                // Remove the pinColor prop
+              >
+                <Icon
+                  name="circle-outline"
+                  size={10}
+                  color="white"
+                />
+              </Marker>
             ))}
+            {polylines.map(({ key, coordinates }) => {
+              const shiftedCoordinates = coordinates.map(({ latitude, longitude }) => ({
+                latitude: latitude,
+                longitude: longitude,
+              }));
+              return (
+                <Polyline
+                  key={key}
+                  coordinates={shiftedCoordinates}
+                  strokeWidth={2}
+                  strokeColor={getColorForInitialLetter(key.charAt(0))}
+                />
+              );
+            })}
           </MapView>
           <View style={[styles.markerContainer, mapMoving && { opacity: 0.5 }]}>
             <Image source={markerIconRed} style={styles.markerIcon} />
@@ -310,8 +389,12 @@ export default function MapScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.zoomButtonContainer}>
-          <Button title="+" onPress={zoomIn} />
-          <Button title="-" onPress={zoomOut} />
+        <TouchableOpacity style={styles.zoomButton} onPress={zoomIn}>
+          <MaterialCommunityIcons name="plus" size={24} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
+          <MaterialCommunityIcons name="minus" size={24} color="white" />
+        </TouchableOpacity>
         </View>
         {info &&
           info.data.map((stop) => (
@@ -427,4 +510,13 @@ const styles = StyleSheet.create({
   timeText: {
     fontSize: 18,
   },
+  zoomButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: "black",
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 5,
+  },  
 });

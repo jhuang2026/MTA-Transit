@@ -2,9 +2,17 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Switch } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
+import { useSelector, useDispatch } from 'react-redux';
+import { toggleDarkMode } from './redux/actions';
+
 function SettingsScreen() {
   const navigation = useNavigation();
-  const [isDarkModeEnabled, setIsDarkModeEnabled] = useState(false);
+
+  const isDarkModeEnabled = useSelector(state => state.darkModeReducer);
+  const dispatch = useDispatch();
+  const handleDarkModeChange = () => {
+    dispatch(toggleDarkMode());
+  };
 
   const handleCityPress = () => {
     // Handle city button press
@@ -41,15 +49,8 @@ function SettingsScreen() {
     // You can add your desired logic here
   };
 
-  const toggleDarkMode = () => {
-    setIsDarkModeEnabled((prevMode) => !prevMode);
-  };
-
   return (
     <View style={[styles.container, isDarkModeEnabled && styles.containerDark]}>
-      <Text style={[styles.title, isDarkModeEnabled && styles.titleDark]}>
-        Settings
-      </Text>
 
       <Text
         style={[
@@ -77,10 +78,10 @@ function SettingsScreen() {
           isDarkModeEnabled && styles.appearanceContainerDark,
         ]}
       >
-        <Text style={isDarkModeEnabled && styles.appearanceTextDark}>
+        <Text style={[styles.appearanceText, isDarkModeEnabled && styles.appearanceTextDark]}>
           Dark Mode
         </Text>
-        <Switch value={isDarkModeEnabled} onValueChange={toggleDarkMode} />
+        <Switch value={isDarkModeEnabled} onValueChange={handleDarkModeChange} />
       </View>
 
       <Text
@@ -188,6 +189,9 @@ const styles = StyleSheet.create({
     borderColor: "white",
     borderBottomWidth: 1,
     paddingBottom: 10,
+  },
+  appearanceText: {
+    fontSize: 16,
   },
   appearanceTextDark: {
     color: "white",

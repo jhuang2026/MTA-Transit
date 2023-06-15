@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSelector } from 'react-redux';
+import stationsData from "./assets/stations.json";
 
 function BrowseScreen() {
   const stops = [
@@ -36,6 +38,11 @@ function BrowseScreen() {
 
   const navigation = useNavigation();
   const [searchTerm, setSearchTerm] = useState("");
+  const isDarkModeEnabled = useSelector(state => state.darkModeReducer);
+
+  const dynamicStyles = useMemo(() => {
+    return isDarkModeEnabled ? darkStyles : lightStyles;
+  }, [isDarkModeEnabled]);
 
   const toStationInfo = (name) => {
     navigation.navigate("StationInfo", { state: name });
@@ -44,7 +51,7 @@ function BrowseScreen() {
   const handleSearchChange = (value) => {
     setSearchTerm(value);
   };
-
+  
   const getStationsInRows = () => {
     const stationsPerRow = [3, 4, 3, 4, 4, 4];
     let stationIndex = 0;
@@ -81,25 +88,45 @@ function BrowseScreen() {
     });
   };
 
+  const getStationNames = () => {
+    return Object.entries(stationsData).map(([id, station]) => ({
+      id,
+      name: station.name,
+    }));
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>List of Stops</Text>
+    <View style={dynamicStyles.container}>
+      <Text style={dynamicStyles.title}>List of Stops</Text>
       <TextInput
         placeholder="Search route..."
         value={searchTerm}
         onChangeText={handleSearchChange}
         style={styles.input}
       />
-      <View style={styles.stopsContainer}>{getStationsInRows()}</View>
+      <View style={dynamicStyles.stopsContainer}>{getStationsInRows()}</View>
+
+      <View style={[styles.hiddenContainer, { marginTop: 10 }]}>
+        <View>
+          {getStationNames().map(station => (
+            <Text key={station.id}>{station.name}</Text>
+          ))}
+        </View>
+      </View>
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
     padding: 20,
+  },
+  hiddenContainer: {
+    position: 'absolute',
+    top: 500,
+    left: 0,
   },
   title: {
     fontSize: 24,
@@ -122,17 +149,53 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   stop: {
-    width: 80, // Adjust the width as needed
-    height: 60, // Adjust the height as needed
+    width: 80,
+    height: 60,
     justifyContent: "center",
     alignItems: "center",
     margin: 2,
-    borderRadius: 30, // Half the width and height for a perfect circle
+    borderRadius: 30,
   },
   stopText: {
     fontSize: 18,
     fontWeight: "bold",
   },
 });
+
+const lightStyles = {
+  container: {
+    ...styles.container,
+    backgroundColor: "#f5f5f5",
+  },
+  title: {
+    ...styles.title,
+  },
+  stopsContainer: {
+    ...styles.stopsContainer,
+    backgroundColor: "#f5f5f5",
+  },
+  stopText: {
+    ...styles.stopText,
+  },
+};
+
+const darkStyles = {
+  container: {
+    ...styles.container,
+    backgroundColor: "#333",
+  },
+  title: {
+    ...styles.title,
+    color: "white",
+  },
+  stopsContainer: {
+    ...styles.stopsContainer,
+    backgroundColor: "#333",
+  },
+  stopText: {
+    ...styles.stopText,
+    color: "white",
+  },
+};
 
 export default BrowseScreen;

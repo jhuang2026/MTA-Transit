@@ -13,7 +13,7 @@ import {
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import stationsData from "./assets/stations.json";
-import markerIconRed from './assets/marker-icon-red.png';
+import markerIconRed from "./assets/marker-icon-red.png";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import coordinatesData from "./assets/coordinates.json";
 
@@ -84,14 +84,13 @@ export default function MapScreen() {
   };
 
   const Station = ({ station, stopData }) => {
-
     const getCircleSize = (index) => {
       if (index === 1) {
         return { width: 65, height: 65 };
       }
       return { width: 75, height: 75 };
     };
-  
+
     const orderRoutes = (routes) => {
       const orderedRoutes = [
         "1",
@@ -124,22 +123,22 @@ export default function MapScreen() {
         "SI",
         "SS",
       ];
-  
+
       routes.sort((a, b) => {
         const indexA = orderedRoutes.indexOf(a);
         const indexB = orderedRoutes.indexOf(b);
         return indexA - indexB;
       });
-  
+
       return routes;
     };
-  
+
     const getRemainingTime = (time) => {
       const remainingSeconds = Math.max(
         0,
         Math.floor((new Date(time) - Date.now()) / 1000)
       );
-  
+
       if (remainingSeconds === 0) {
         return "BOARD";
       } else if (remainingSeconds < 60) {
@@ -149,13 +148,13 @@ export default function MapScreen() {
         return `${remainingMinutes}m`;
       }
     };
-  
+
     const getCircleColor = (time, index) => {
       const remainingSeconds = Math.max(
         0,
         Math.floor((new Date(time) - Date.now()) / 1000)
       );
-  
+
       if (remainingSeconds === 0) {
         return "red";
       } else if (remainingSeconds < 60) {
@@ -164,13 +163,14 @@ export default function MapScreen() {
         return index === 1 ? "grey" : "blue";
       }
     };
-  
+
     return (
       <View style={styles.eachStop}>
         <Text style={styles.stationName}>{station.name}</Text>
         <Text style={styles.routeText}>
           Routes: {orderRoutes(station.routes).join(", ")}
         </Text>
+
         <View style={styles.routesContainer}>
           <View style={styles.directionContainer}>
             <View style={styles.directionTextContainer}>
@@ -186,7 +186,9 @@ export default function MapScreen() {
                     styles.timeCircle,
                     getCircleSize(index),
                     {
-                      borderColor: getCircleColor(route.time, index),
+                      borderColor: route.time
+                        ? getCircleColor(route.time, index)
+                        : "grey",
                       backgroundColor: index === 0 ? "white" : undefined,
                       zIndex: index === 0 ? 2 : 1,
                       marginLeft: index === 1 ? -15 : undefined,
@@ -194,13 +196,24 @@ export default function MapScreen() {
                   ]}
                 >
                   <Text style={styles.timeText}>
-                    {getRemainingTime(route.time)}
+                    {route.time ? getRemainingTime(route.time) : "..."}
                   </Text>
                 </View>
               ))}
+              {stopData.N.length < 2 && (
+                <View
+                  style={[
+                    styles.timeCircle,
+                    getCircleSize(1),
+                    { borderColor: "grey", marginLeft: -15 },
+                  ]}
+                >
+                  <Text style={styles.timeText}>...</Text>
+                </View>
+              )}
             </View>
           </View>
-  
+
           <View style={styles.directionContainer}>
             <View style={styles.directionTextContainer}>
               <Text style={styles.directionText}>
@@ -208,30 +221,45 @@ export default function MapScreen() {
               </Text>
             </View>
             <View style={styles.timeContainer}>
-            {stopData.S.slice(0, 2).map((route, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.timeCircle,
-                  getCircleSize(index, 'S'),
-                  {
-                    borderColor: getCircleColor(route.time, index),
-                    backgroundColor: index === 0 ? "white" : undefined,
-                    zIndex: index === 0 ? 2 : 1,
-                    marginLeft: index === 1 ? -15 : undefined,
-                  },
-                ]}
-              >
-                <Text style={styles.timeText}>{getRemainingTime(route.time)}</Text>
-              </View>
-            ))}
+              {stopData.S.slice(0, 2).map((route, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.timeCircle,
+                    getCircleSize(index, "S"),
+                    {
+                      borderColor: route.time
+                        ? getCircleColor(route.time, index)
+                        : "grey",
+                      backgroundColor: index === 0 ? "white" : undefined,
+                      zIndex: index === 0 ? 2 : 1,
+                      marginLeft: index === 1 ? -15 : undefined,
+                    },
+                  ]}
+                >
+                  <Text style={styles.timeText}>
+                    {route.time ? getRemainingTime(route.time) : "..."}
+                  </Text>
+                </View>
+              ))}
+              {stopData.S.length < 2 && (
+                <View
+                  style={[
+                    styles.timeCircle,
+                    getCircleSize(1, "S"),
+                    { borderColor: "grey", marginLeft: -15 },
+                  ]}
+                >
+                  <Text style={styles.timeText}>...</Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
       </View>
     );
   };
-  
+
   const zoomIn = () => {
     mapRef.current?.animateToRegion({
       latitude: mapCenter.latitude,
@@ -260,59 +288,70 @@ export default function MapScreen() {
   };
 
   const [polylines, setPolylines] = useState([]);
-  const [displayedCoordinates, setDisplayedCoordinates] = useState('');
+  const [displayedCoordinates, setDisplayedCoordinates] = useState("");
 
   useEffect(() => {
-    const parsedCoordinates = Object.entries(coordinatesData).map(([key, value]) => ({
-      key,
-      coordinates: value.map(([latitude, longitude]) => ({ latitude, longitude })),
-    }));
+    const parsedCoordinates = Object.entries(coordinatesData).map(
+      ([key, value]) => ({
+        key,
+        coordinates: value.map(([latitude, longitude]) => ({
+          latitude,
+          longitude,
+        })),
+      })
+    );
     setPolylines(parsedCoordinates);
     setDisplayedCoordinates(
       parsedCoordinates
-        .map(({ key, coordinates }) =>
-          `${key}: [${coordinates.map(({ latitude, longitude }) => `{ latitude: ${latitude}, longitude: ${longitude} }`).join(', ')}]`
+        .map(
+          ({ key, coordinates }) =>
+            `${key}: [${coordinates
+              .map(
+                ({ latitude, longitude }) =>
+                  `{ latitude: ${latitude}, longitude: ${longitude} }`
+              )
+              .join(", ")}]`
         )
-        .join('\n')
+        .join("\n")
     );
   }, []);
 
   const getColorForInitialLetter = (initialLetter) => {
     switch (initialLetter) {
-      case 'A':
-      case 'C':
-      case 'E':
-        return '#0039A6';
-      case 'B':
-      case 'D':
-      case 'F':
-      case 'M':
-        return '#FF6319';
-      case 'G':
-        return '#6CBE45';
-      case 'J':
-      case 'Z':
-        return '#996633';
-      case 'L':
-        return '#A7A9AC';
-      case 'N':
-      case 'Q':
-      case 'R':
-        return '#FCCC0A';
-      case 'S':
-        return '#808183';
-      case '1':
-      case '2':
-      case '3':
-        return '#EE352E';
-      case '4':
-      case '5':
-      case '6':
-        return '#00933C';
-      case '7':
-        return '#B933AD';
+      case "A":
+      case "C":
+      case "E":
+        return "#0039A6";
+      case "B":
+      case "D":
+      case "F":
+      case "M":
+        return "#FF6319";
+      case "G":
+        return "#6CBE45";
+      case "J":
+      case "Z":
+        return "#996633";
+      case "L":
+        return "#A7A9AC";
+      case "N":
+      case "Q":
+      case "R":
+        return "#FCCC0A";
+      case "S":
+        return "#808183";
+      case "1":
+      case "2":
+      case "3":
+        return "#EE352E";
+      case "4":
+      case "5":
+      case "6":
+        return "#00933C";
+      case "7":
+        return "#B933AD";
       default:
-        return '#000000'; // Default color if no matching case is found
+        return "#000000"; // Default color if no matching case is found
     }
   };
 
@@ -331,7 +370,7 @@ export default function MapScreen() {
             onUserLocationChange={(event) =>
               setUserLocation(event.nativeEvent.coordinate)
             }
-            userInterfaceStyle={'dark'}
+            userInterfaceStyle={"dark"}
           >
             {Object.values(stationsData).map((station) => (
               <Marker
@@ -343,18 +382,16 @@ export default function MapScreen() {
                 title={station.name}
                 // Remove the pinColor prop
               >
-                <Icon
-                  name="circle-outline"
-                  size={10}
-                  color="white"
-                />
+                <Icon name="circle-outline" size={10} color="white" />
               </Marker>
             ))}
             {polylines.map(({ key, coordinates }) => {
-              const shiftedCoordinates = coordinates.map(({ latitude, longitude }) => ({
-                latitude: latitude,
-                longitude: longitude,
-              }));
+              const shiftedCoordinates = coordinates.map(
+                ({ latitude, longitude }) => ({
+                  latitude: latitude,
+                  longitude: longitude,
+                })
+              );
               return (
                 <Polyline
                   key={key}
@@ -389,12 +426,12 @@ export default function MapScreen() {
           </TouchableOpacity>
         </View>
         <View style={styles.zoomButtonContainer}>
-        <TouchableOpacity style={styles.zoomButton} onPress={zoomIn}>
-          <MaterialCommunityIcons name="plus" size={24} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
-          <MaterialCommunityIcons name="minus" size={24} color="white" />
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.zoomButton} onPress={zoomIn}>
+            <MaterialCommunityIcons name="plus" size={24} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
+            <MaterialCommunityIcons name="minus" size={24} color="white" />
+          </TouchableOpacity>
         </View>
         {info &&
           info.data.map((stop) => (
@@ -425,9 +462,9 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   markerContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
     marginLeft: -12,
     marginTop: -36,
     zIndex: 999,
@@ -470,11 +507,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   directionContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 10,
-  },  
+  },
   directionText: {
     fontWeight: "bold",
     marginBottom: 5,
@@ -485,19 +522,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-front",
     paddingRight: 10,
-  },  
+  },
   routeText: {
     marginBottom: 5,
   },
   timeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end', // Align circles to the right
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end", // Align circles to the right
     marginBottom: 10,
-  },  
+  },
   spacer: {
     width: 10, // Adjust as needed
-  },  
+  },
   timeCircle: {
     width: 75,
     height: 75,
@@ -518,5 +555,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 5,
-  },  
+  },
 });

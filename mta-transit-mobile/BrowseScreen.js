@@ -5,10 +5,13 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useSelector } from 'react-redux';
+import { useSelector } from "react-redux";
 import stationsData from "./assets/stations.json";
+import { Ionicons } from "@expo/vector-icons";
+
 
 function BrowseScreen() {
   const stops = [
@@ -38,7 +41,8 @@ function BrowseScreen() {
 
   const navigation = useNavigation();
   const [searchTerm, setSearchTerm] = useState("");
-  const isDarkModeEnabled = useSelector(state => state.darkModeReducer);
+  const [filteredStations, setFilteredStations] = useState([]);
+  const isDarkModeEnabled = useSelector((state) => state.darkModeReducer);
 
   const dynamicStyles = useMemo(() => {
     return isDarkModeEnabled ? darkStyles : lightStyles;
@@ -48,10 +52,22 @@ function BrowseScreen() {
     navigation.navigate("StationInfo", { state: name });
   };
 
+  const toSpecificStation = (id) => {
+    navigation.navigate("SpecificStation", { state: id });
+  };
+
   const handleSearchChange = (value) => {
     setSearchTerm(value);
+    filterStations(value);
   };
-  
+
+  const filterStations = (value) => {
+    const filteredStations = getStationNames().filter((station) =>
+      station.name.toLowerCase().includes(value.toLowerCase())
+    );
+    setFilteredStations(filteredStations);
+  };
+
   const getStationsInRows = () => {
     const stationsPerRow = [3, 4, 3, 4, 4, 4];
     let stationIndex = 0;
@@ -89,59 +105,100 @@ function BrowseScreen() {
   };
 
   const getStationNames = () => {
-    return Object.entries(stationsData).map(([id, station]) => ({
-      id,
-      name: station.name,
-    }));
+    return searchTerm
+      ? filteredStations
+      : Object.entries(stationsData).map(([id, station]) => ({
+          id,
+          name: station.name,
+        }));
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setFilteredStations([]);
   };
 
   return (
     <View style={dynamicStyles.container}>
-      <Text style={dynamicStyles.title}>List of Stops</Text>
-      <TextInput
-        placeholder="Search route..."
-        value={searchTerm}
-        onChangeText={handleSearchChange}
-        style={styles.input}
-      />
-      <View style={dynamicStyles.stopsContainer}>{getStationsInRows()}</View>
-
-      <View style={[styles.hiddenContainer, { marginTop: 10 }]}>
-        <View>
-          {getStationNames().map(station => (
-            <Text key={station.id}>{station.name}</Text>
-          ))}
+      <Text style={dynamicStyles.title}>All Stations</Text>
+      <View style={styles.searchContainer}>
+        <View style={styles.searchInputContainer}>
+          <TextInput
+            placeholder="Search station..."
+            value={searchTerm}
+            onChangeText={handleSearchChange}
+            style={styles.searchInput}
+          />
+          {searchTerm.length > 0 && (
+            <TouchableOpacity onPress={clearSearch} style={styles.clearButtonContainer}>
+              <Ionicons name="close" size={20} color="#888" />
+            </TouchableOpacity>
+          )}
         </View>
+        <TouchableOpacity onPress={clearSearch} style={styles.cancelButton}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
       </View>
+      {searchTerm ? (
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.scrollContent}>
+            {getStationNames().map((station) => (
+              <TouchableOpacity
+                key={station.id}
+                onPress={() => toSpecificStation(station.id)}
+              >
+                <Text style={[styles.stationName, dynamicStyles.stationName]}>
+                  {station.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      ) : (
+        <View style={dynamicStyles.stopsContainer}>{getStationsInRows()}</View>
+      )}
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
   },
-  hiddenContainer: {
-    position: 'absolute',
-    top: 500,
-    left: 0,
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingLeft: 10,
+    paddingVertical: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
   },
-  input: {
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
     backgroundColor: "#fff",
-    padding: 10,
-    marginBottom: 10,
     borderRadius: 10,
+    marginRight: 10,
+  },
+  searchInput: {
+    flex: 1,
+    padding: 10,
   },
   stopsContainer: {
     flex: 1,
     flexDirection: "column",
+    marginTop: 40,
   },
   row: {
     flex: 1,
@@ -160,6 +217,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  stationName: {
+    fontSize: 20,
+    marginBottom: 10,
+  },
+  clearButtonContainer: {
+    position: "absolute",
+    right: 10,
+  },
+  cancelButton: {
+    marginLeft: 10,
+  },
+  cancelButtonText: {
+    color: "#888",
+    fontSize: 16,
+  },
 });
 
 const lightStyles = {
@@ -176,6 +248,9 @@ const lightStyles = {
   },
   stopText: {
     ...styles.stopText,
+  },
+  stationName: {
+    color: "black", // Light mode color
   },
 };
 
@@ -195,6 +270,9 @@ const darkStyles = {
   stopText: {
     ...styles.stopText,
     color: "white",
+  },
+  stationName: {
+    color: "white", // Dark mode color
   },
 };
 

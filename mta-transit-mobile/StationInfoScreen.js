@@ -4,8 +4,6 @@ import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
 import { api } from "./components/api";
 import stationsData from "./assets/stations.json";
 
-
-
 const Station = ({ station, stopData }) => {
   const getRemainingTime = (time) => {
     const remainingSeconds = Math.max(

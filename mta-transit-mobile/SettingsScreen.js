@@ -75,7 +75,6 @@ function SettingsScreen() {
       <View
         style={[
           styles.appearanceContainer,
-          isDarkModeEnabled && styles.appearanceContainerDark,
         ]}
       >
         <Text style={[styles.appearanceText, isDarkModeEnabled && styles.appearanceTextDark]}>
@@ -184,11 +183,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 10,
-  },
-  appearanceContainerDark: {
-    borderColor: "white",
-    borderBottomWidth: 1,
-    paddingBottom: 10,
   },
   appearanceText: {
     fontSize: 16,

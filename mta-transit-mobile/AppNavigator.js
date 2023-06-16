@@ -8,6 +8,7 @@ import FavoritesScreen from "./FavoritesScreen";
 import BrowseScreen from "./BrowseScreen";
 import SettingsScreen from "./SettingsScreen";
 import StationInfoScreen from "./StationInfoScreen";
+import SpecificStation from "./SpecificStation";
 
 const Tab = createBottomTabNavigator();
 
@@ -16,6 +17,7 @@ const BrowseStack = createStackNavigator();
 const BrowseStackScreen = () => (
   <BrowseStack.Navigator screenOptions={{ headerShown: false }}>
     <BrowseStack.Screen name="AllStations" component={BrowseScreen} />
+    <BrowseStack.Screen name="SpecificStation" component={SpecificStation} />
     <BrowseStack.Screen name="StationInfo" component={StationInfoScreen} />
   </BrowseStack.Navigator>
 );
@@ -62,8 +64,8 @@ function AppNavigator() {
         <Tab.Screen
           name="Settings"
           component={SettingsScreen}
-          options={{
-            screenParams: { isDarkModeEnabled, handleDarkModeChange },
+          screenOptions={{
+            initialParams: { isDarkModeEnabled, handleDarkModeChange },
           }}
         />
       </Tab.Navigator>

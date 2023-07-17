@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
   },
   zoomButtonContainer: {
     position: "absolute",
-    top: 20,
+    top: 25,
     right: 20,
     flexDirection: "column",
     alignItems: "center",

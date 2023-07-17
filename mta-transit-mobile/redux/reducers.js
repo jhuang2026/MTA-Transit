@@ -6,3 +6,12 @@ export const darkModeReducer = (state = false, action) => {
       return state;
   }
 };
+
+export const starredStationsReducer = (state = [], action) => {
+  switch (action.type) {
+    case 'ADD_TO_STARRED_LIST':
+      return [...state, action.payload];
+    default:
+      return state;
+  }
+};

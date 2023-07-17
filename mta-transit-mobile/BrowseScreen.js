@@ -42,7 +42,7 @@ function BrowseScreen() {
   const navigation = useNavigation();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredStations, setFilteredStations] = useState([]);
-  const isDarkModeEnabled = useSelector((state) => state.darkModeReducer);
+  const isDarkModeEnabled = useSelector(state => state.darkModeReducer);
 
   const dynamicStyles = useMemo(() => {
     return isDarkModeEnabled ? darkStyles : lightStyles;

@@ -16,6 +16,9 @@ import stationsData from "./assets/stations.json";
 import markerIconRed from "./assets/marker-icon-red.png";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import coordinatesData from "./assets/coordinates.json";
+import { useDispatch } from 'react-redux';
+import { addToStarredList } from './redux/actions';
+
 
 export default function MapScreen() {
   const [info, setInfo] = useState({ data: [], updated: "" });
@@ -84,6 +87,7 @@ export default function MapScreen() {
   };
 
   const Station = ({ station, stopData }) => {
+    const dispatch = useDispatch();
     const getCircleSize = (index) => {
       if (index === 1) {
         return { width: 65, height: 65 };
@@ -166,6 +170,7 @@ export default function MapScreen() {
 
     const toggleStar = (stationId) => {
       console.log("Toggling star for station " + stationId);
+      dispatch(addToStarredList(stationId));
     };
 
     return (

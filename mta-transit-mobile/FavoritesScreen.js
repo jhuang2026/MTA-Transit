@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
 
 function FavoritesScreen() {
   const isDarkModeEnabled = useSelector(state => state.darkModeReducer);
+  const favorites = useSelector(state => state.starredStationsReducer);
 
   const containerStyle = {
     ...styles.container,
@@ -29,7 +30,7 @@ function FavoritesScreen() {
 
   return (
     <View style={containerStyle}>
-      <Text style={textStyle}>Favorites Screen</Text>
+      <Text style={textStyle}>{favorites ? favorites.join(" ") : "Favorites Screen"}</Text>
     </View>
   );
 }

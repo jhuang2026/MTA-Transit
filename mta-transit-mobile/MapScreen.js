@@ -164,9 +164,26 @@ export default function MapScreen() {
       }
     };
 
+    const toggleStar = (stationId) => {
+      console.log("Toggling star for station " + stationId);
+    };
+
     return (
       <View style={styles.eachStop}>
-        <Text style={styles.stationName}>{station.name}</Text>
+         <View style={styles.stationHeader}>
+          <Text style={styles.stationName}>{station.name}</Text>
+          <TouchableOpacity
+            onPress={() => toggleStar(station.id)}
+            style={styles.starButton}
+          >
+            <MaterialCommunityIcons
+              name="star"
+              size={24}
+              color="black"
+              style={styles.starIcon}
+            />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.routeText}>
           Routes: {orderRoutes(station.routes).join(", ")}
         </Text>
@@ -555,6 +572,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 5,
+  },
+  starButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
   },
 });
 

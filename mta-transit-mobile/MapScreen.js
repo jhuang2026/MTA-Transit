@@ -16,6 +16,9 @@ import stationsData from "./assets/stations.json";
 import markerIconRed from "./assets/marker-icon-red.png";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import coordinatesData from "./assets/coordinates.json";
+import { useDispatch } from 'react-redux';
+import { addToStarredList } from './redux/actions';
+
 
 export default function MapScreen() {
   const [info, setInfo] = useState({ data: [], updated: "" });
@@ -84,6 +87,7 @@ export default function MapScreen() {
   };
 
   const Station = ({ station, stopData }) => {
+    const dispatch = useDispatch();
     const getCircleSize = (index) => {
       if (index === 1) {
         return { width: 65, height: 65 };
@@ -164,9 +168,27 @@ export default function MapScreen() {
       }
     };
 
+    const toggleStar = (stationId) => {
+      console.log("Toggling star for station " + stationId);
+      dispatch(addToStarredList(stationId));
+    };
+
     return (
       <View style={styles.eachStop}>
-        <Text style={styles.stationName}>{station.name}</Text>
+         <View style={styles.stationHeader}>
+          <Text style={styles.stationName}>{station.name}</Text>
+          <TouchableOpacity
+            onPress={() => toggleStar(station.id)}
+            style={styles.starButton}
+          >
+            <MaterialCommunityIcons
+              name="star"
+              size={24}
+              color="black"
+              style={styles.starIcon}
+            />
+          </TouchableOpacity>
+        </View>
         <Text style={styles.routeText}>
           Routes: {orderRoutes(station.routes).join(", ")}
         </Text>
@@ -555,6 +577,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 5,
+  },
+  starButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
   },
 });
 

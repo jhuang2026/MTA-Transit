@@ -10,3 +10,10 @@ export const addToStarredList = (stationId) => {
     payload: stationId,
   };
 };
+
+export const removeFromStarredList = (stationId) => {
+  return {
+    type: "REMOVE_FROM_STARRED_LIST",
+    payload: stationId,
+  };
+};

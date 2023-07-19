@@ -16,8 +16,8 @@ import stationsData from "./assets/stations.json";
 import markerIconRed from "./assets/marker-icon-red.png";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import coordinatesData from "./assets/coordinates.json";
-import { useDispatch } from 'react-redux';
-import { addToStarredList } from './redux/actions';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToStarredList, removeFromStarredList } from './redux/actions';
 
 
 export default function MapScreen() {
@@ -88,6 +88,8 @@ export default function MapScreen() {
 
   const Station = ({ station, stopData }) => {
     const dispatch = useDispatch();
+    const favorites = useSelector((state) => state.starredStationsReducer);
+    const isFavorite = favorites.includes(station.id);
     const getCircleSize = (index) => {
       if (index === 1) {
         return { width: 65, height: 65 };
@@ -169,9 +171,14 @@ export default function MapScreen() {
     };
 
     const toggleStar = (stationId) => {
-      console.log("Toggling star for station " + stationId);
-      dispatch(addToStarredList(stationId));
-    };
+      if (isFavorite) {
+        console.log("Removing star for station " + stationId);
+        dispatch(removeFromStarredList(stationId));
+      } else {
+        console.log("Adding star for station " + stationId);
+        dispatch(addToStarredList(stationId));
+      }
+    };    
 
     return (
       <View style={styles.eachStop}>
@@ -184,7 +191,7 @@ export default function MapScreen() {
             <MaterialCommunityIcons
               name="star"
               size={24}
-              color="black"
+              color={isFavorite ? "#ffd60a" : "black"}
               style={styles.starIcon}
             />
           </TouchableOpacity>

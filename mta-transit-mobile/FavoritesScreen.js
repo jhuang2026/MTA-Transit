@@ -1,57 +1,206 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, TextInput, StyleSheet, ScrollView, useColorScheme } from "react-native";
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
 import { api } from "./components/api";
 import stationsData from "./assets/stations.json";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { addToStarredList, removeFromStarredList } from './redux/actions';
 
-const Station = ({ station, stopData, isDarkModeEnabled }) => {
+function Station({ station, stopData, isDarkModeEnabled }) {
+  const dispatch = useDispatch();
+  const favorites = useSelector((state) => state.starredStationsReducer);
+  const isFavorite = favorites.includes(station.id);
+  
+  const getCircleSize = (index) => {
+    if (index === 1) {
+      return { width: 65, height: 65 };
+    }
+    return { width: 75, height: 75 };
+  };
+
+  const orderRoutes = (routes) => {
+    const orderedRoutes = [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "6X",
+      "7",
+      "7X",
+      "A",
+      "C",
+      "E",
+      "N",
+      "Q",
+      "R",
+      "W",
+      "B",
+      "D",
+      "F",
+      "FS",
+      "M",
+      "L",
+      "G",
+      "J",
+      "Z",
+      "H",
+      "S",
+      "SI",
+      "SS",
+    ];
+
+    routes.sort((a, b) => {
+      const indexA = orderedRoutes.indexOf(a);
+      const indexB = orderedRoutes.indexOf(b);
+      return indexA - indexB;
+    });
+
+    return routes;
+  };
+
   const getRemainingTime = (time) => {
-    const remainingSeconds = Math.max(
-      0,
-      Math.floor((new Date(time) - Date.now()) / 1000)
-    );
+    const remainingSeconds = Math.max(0, Math.floor((new Date(time) - Date.now()) / 1000));
 
     if (remainingSeconds === 0) {
-      return "BOARDING";
+      return "BOARD";
     } else if (remainingSeconds < 60) {
-      return `${remainingSeconds} seconds`;
+      return `${remainingSeconds}s`;
     } else {
       const remainingMinutes = Math.floor(remainingSeconds / 60);
-      return `${remainingMinutes} minutes`;
+      return `${remainingMinutes}m`;
     }
   };
 
-  const textStyle = isDarkModeEnabled ? styles.stationName : styles.stationNameDark;
+  const getCircleColor = (time, index) => {
+    const remainingSeconds = Math.max(0, Math.floor((new Date(time) - Date.now()) / 1000));
+
+    if (remainingSeconds === 0) {
+      return "red";
+    } else if (remainingSeconds < 60) {
+      return "orange";
+    } else {
+      return index === 1 ? "grey" : "blue";
+    }
+  };
+
+  const toggleStar = (stationId) => {
+    if (isFavorite) {
+      console.log("Removing station " + stationId + " from favorites");
+      // Dispatch an action to remove the station from the Redux store
+      dispatch(removeFromStarredList(stationId));
+    } else {
+      console.log("Adding station " + stationId + " to favorites");
+      // Dispatch an action to add the station to the Redux store
+      dispatch(addToStarredList(stationId));
+    }
+  };  
+
+  const dynamicStyles = useMemo(() => {
+    return isDarkModeEnabled ? darkStyles : lightStyles;
+  }, [isDarkModeEnabled]);
 
   return (
-    <View style={styles.eachStop}>
-      <Text style={textStyle}>{station.name}</Text>
-
-      <View style={styles.stationData}>
-        <Text>Direction: {stationsData[station.id]?.north_direction}</Text>
-        {stopData.N.slice(0, 5).map((item, index) => (
-          <Text key={index}>
-            Route: {item.route}, Time: {getRemainingTime(item.time)}
-          </Text>
-        ))}
+    <View style={[styles.eachStop, dynamicStyles.eachStop]}>
+      <View style={[styles.stationHeader, dynamicStyles.stationHeader]}>
+        <Text style={[styles.stationName, dynamicStyles.stationName]}>{station.name}</Text>
+        <TouchableOpacity onPress={() => toggleStar(station.id)} style={styles.starButton}>
+          <MaterialCommunityIcons name="star" size={24} color={isFavorite ? "#ffd60a" : dynamicStyles.starColor} />
+        </TouchableOpacity>
       </View>
+      <Text style={[styles.routeText, dynamicStyles.routeText]}>
+        Routes: {orderRoutes(station.routes).join(", ")}
+      </Text>
 
-      <View style={styles.stationData}>
-        <Text>Direction: {stationsData[station.id]?.south_direction}</Text>
-        {stopData.S.slice(0, 5).map((item, index) => (
-          <Text key={index}>
-            Route: {item.route}, Time: {getRemainingTime(item.time)}
-          </Text>
-        ))}
+      <View style={styles.routesContainer}>
+        <View style={styles.directionContainer}>
+          <View style={styles.directionTextContainer}>
+            <Text style={[styles.directionText, dynamicStyles.directionText]}>
+              {stationsData[station.id]?.north_direction}
+            </Text>
+          </View>
+          <View style={styles.timeContainer}>
+            {stopData.N.slice(0, 2).map((route, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.timeCircle,
+                  getCircleSize(index),
+                  {
+                    borderColor: route.time ? getCircleColor(route.time, index) : "grey",
+                    backgroundColor: index === 0 ? "white" : undefined,
+                    zIndex: index === 0 ? 2 : 1,
+                    marginLeft: index === 1 ? -15 : undefined,
+                  },
+                ]}
+              >
+                <Text style={[styles.timeText, dynamicStyles.timeText]}>
+                  {route.time ? getRemainingTime(route.time) : "..."}
+                </Text>
+              </View>
+            ))}
+            {stopData.N.length < 2 && (
+              <View
+                style={[
+                  styles.timeCircle,
+                  getCircleSize(1),
+                  { borderColor: "grey", marginLeft: -15 },
+                ]}
+              >
+                <Text style={[styles.timeText, dynamicStyles.timeText]}>...</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.directionContainer}>
+          <View style={styles.directionTextContainer}>
+            <Text style={[styles.directionText, dynamicStyles.directionText]}>
+              {stationsData[station.id]?.south_direction}
+            </Text>
+          </View>
+          <View style={styles.timeContainer}>
+            {stopData.S.slice(0, 2).map((route, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.timeCircle,
+                  getCircleSize(index, "S"),
+                  {
+                    borderColor: route.time ? getCircleColor(route.time, index) : "grey",
+                    backgroundColor: index === 0 ? "white" : undefined,
+                    zIndex: index === 0 ? 2 : 1,
+                    marginLeft: index === 1 ? -15 : undefined,
+                  },
+                ]}
+              >
+                <Text style={[styles.timeText, dynamicStyles.timeText]}>
+                  {route.time ? getRemainingTime(route.time) : "..."}
+                </Text>
+              </View>
+            ))}
+            {stopData.S.length < 2 && (
+              <View
+                style={[
+                  styles.timeCircle,
+                  getCircleSize(1, "S"),
+                  { borderColor: "grey", marginLeft: -15 },
+                ]}
+              >
+                <Text style={[styles.timeText, dynamicStyles.timeText]}>...</Text>
+              </View>
+            )}
+          </View>
+        </View>
       </View>
     </View>
   );
-};
+}
 
 function FavoritesScreen() {
-  const isDarkModeEnabled = useSelector(state => state.darkModeReducer);
-  const favorites = useSelector(state => state.starredStationsReducer);
-  const colorScheme = useColorScheme();
+  const isDarkModeEnabled = useSelector((state) => state.darkModeReducer);
+  const favorites = useSelector((state) => state.starredStationsReducer);
 
   const [info, setInfo] = useState({ data: [], updated: "" });
 
@@ -79,20 +228,27 @@ function FavoritesScreen() {
     };
   }, [fetchData]);
 
+  const dynamicStyles = useMemo(() => {
+    return isDarkModeEnabled ? darkStyles : lightStyles;
+  }, [isDarkModeEnabled]);
+
   return (
-    <View style={[styles.container, isDarkModeEnabled ? styles.containerDark : null]}>
-      <Text style={[styles.text, isDarkModeEnabled ? styles.textDark : null]}>
-        {favorites.length > 0 ? favorites.join(", ") : "No favorites selected."}
-      </Text>
+    <View style={[styles.container, dynamicStyles.container]}>
       <ScrollView>
-        {info.data.map((station, index) => (
-          <Station
-            key={index}
-            station={station}
-            stopData={station}
-            isDarkModeEnabled={isDarkModeEnabled}
-          />
-        ))}
+        {favorites.length === 0 ? (
+          <Text style={[styles.addFavoriteText, dynamicStyles.addFavoriteText]}>
+            Add Your Favorite Stations
+          </Text>
+        ) : (
+          info.data.map((station) => (
+            <Station
+              key={station.id}
+              station={station}
+              stopData={station}
+              isDarkModeEnabled={isDarkModeEnabled}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -102,49 +258,111 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    padding: 20,
   },
-  containerDark: {
-    backgroundColor: "#333333",
-  },
-  title: {
-    fontSize: 20,
+  addFavoriteText: {
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 10,
-  },
-  searchInput: {
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10,
+    textAlign: "center",
+    marginTop: 25,
   },
   eachStop: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     marginBottom: 20,
     padding: 10,
     borderRadius: 10,
+    width: "100%",
+  },
+  stationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 5,
   },
   stationName: {
-    fontSize: 18,
     fontWeight: "bold",
+    fontSize: 22,
   },
-  stationNameDark: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#ffffff",
+  starButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
   },
-  stationData: {
+  routeText: {
+    marginBottom: 5,
+  },
+  routesContainer: {
     marginTop: 10,
+  },
+  directionContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  directionTextContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "flex-start",
+    paddingRight: 10,
+  },
+  directionText: {
+    fontWeight: "bold",
+    marginBottom: 5,
+    fontSize: 18,
+  },
+  timeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginBottom: 10,
+  },
+  timeCircle: {
+    width: 75,
+    height: 75,
+    borderRadius: 50,
+    borderWidth: 2,
+    marginRight: 5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timeText: {
+    fontSize: 18,
   },
   text: {
     fontSize: 18,
     fontWeight: "bold",
   },
-  textDark: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#ffffff",
-  },
 });
+
+const lightStyles = {
+  container: {
+    backgroundColor: "#f5f5f5",
+  },
+  eachStop: {
+    backgroundColor: "#FFFFFF",
+  },
+  stationHeader: {},
+  stationName: {},
+  text: {},
+};
+
+const darkStyles = {
+  container: {
+    backgroundColor: "#333",
+  },
+  stationHeader: {
+    borderBottomColor: "white",
+    borderBottomWidth: 1,
+  },
+  stationName: {
+    color: "black",
+  },
+  text: {
+    color: "white",
+  },
+  addFavoriteText: {
+    color: "white",
+  },
+};
 
 export default FavoritesScreen;

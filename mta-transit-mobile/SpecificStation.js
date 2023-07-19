@@ -2,10 +2,21 @@ import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { api } from "./components/api";
 import stationsData from "./assets/stations.json";
+import { useSelector } from "react-redux";
+import { Ionicons } from "@expo/vector-icons";
 
 const SpecificStation = ({ route }) => {
   const { state } = route.params;
   const [data, setData] = useState([]);
+  const isDarkModeEnabled = useSelector((state) => state.darkModeReducer);
+
+  const dynamicStyles = {
+    container: isDarkModeEnabled ? darkStyles.container : lightStyles.container,
+    title: isDarkModeEnabled ? darkStyles.title : lightStyles.title,
+    stationName: isDarkModeEnabled ? lightStyles.stationName : lightStyles.stationName,
+    directionText: isDarkModeEnabled ? lightStyles.directionText : lightStyles.directionText,
+    routeTimeText: isDarkModeEnabled ? lightStyles.routeTimeText : lightStyles.routeTimeText,
+  };
 
   const getRemainingTime = (time) => {
     const remainingSeconds = Math.max(
@@ -85,13 +96,14 @@ const SpecificStation = ({ route }) => {
   }, [state]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Specific Station</Text>
-      <Text style={styles.stationId}>Station ID: {state}</Text>
+    <View style={[styles.container, dynamicStyles.container]}>
+      <Text style={[styles.title, dynamicStyles.title]}>Specific Station</Text>
 
       {data.map((station, index) => (
         <View key={index} style={styles.stationContainer}>
-          <Text style={styles.stationName}>{station.name}</Text>
+          <Text style={[styles.stationName, dynamicStyles.stationName]}>
+            {station.name}
+          </Text>
 
           <View style={styles.stationRoutesContainer}>
             {orderRoutes(station.routes).map((route, index) => (
@@ -102,12 +114,12 @@ const SpecificStation = ({ route }) => {
           </View>
 
           <View style={styles.stationData}>
-            <Text style={styles.directionText}>
+            <Text style={[styles.directionText, dynamicStyles.directionText]}>
               North Direction: {stationsData[station.id]?.north_direction}
             </Text>
             {station.N.length > 0 ? (
               station.N.slice(0, 5).map((item, index) => (
-                <Text key={index} style={styles.routeTimeText}>
+                <Text key={index} style={[styles.routeTimeText, dynamicStyles.routeTimeText]}>
                   Route: {item.route}, Time: {getRemainingTime(item.time)}
                 </Text>
               ))
@@ -117,12 +129,12 @@ const SpecificStation = ({ route }) => {
           </View>
 
           <View style={styles.stationData}>
-            <Text style={styles.directionText}>
+            <Text style={[styles.directionText, dynamicStyles.directionText]}>
               South Direction: {stationsData[station.id]?.south_direction}
             </Text>
             {station.S.length > 0 ? (
               station.S.slice(0, 5).map((item, index) => (
-                <Text key={index} style={styles.routeTimeText}>
+                <Text key={index} style={[styles.routeTimeText, dynamicStyles.routeTimeText]}>
                   Route: {item.route}, Time: {getRemainingTime(item.time)}
                 </Text>
               ))
@@ -141,7 +153,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#f5f5f5",
     padding: 20,
   },
   title: {
@@ -186,5 +197,33 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
 });
+
+const lightStyles = {
+  container: {
+    backgroundColor: "#f5f5f5",
+  },
+  title: {},
+  stationName: {},
+  directionText: {},
+  routeTimeText: {},
+};
+
+const darkStyles = {
+  container: {
+    backgroundColor: "#333",
+  },
+  title: {
+    color: "white",
+  },
+  stationName: {
+    color: "white",
+  },
+  directionText: {
+    color: "white",
+  },
+  routeTimeText: {
+    color: "white",
+  },
+};
 
 export default SpecificStation;

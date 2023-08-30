@@ -64,7 +64,7 @@ function SettingsScreen() {
         <Text style={styles.buttonText}>New York City</Text>
       </TouchableOpacity>
 
-      <Text
+      {/* <Text
         style={[
           styles.sectionTitle,
           isDarkModeEnabled && styles.sectionTitleDark,
@@ -81,7 +81,7 @@ function SettingsScreen() {
           Dark Mode
         </Text>
         <Switch value={isDarkModeEnabled} onValueChange={handleDarkModeChange} />
-      </View>
+      </View> */}
 
       <Text
         style={[

@@ -29,14 +29,13 @@ function BrowseScreen() {
     { name: "D", backgroundColor: "#FF6319", textColor: "white" },
     { name: "F", backgroundColor: "#FF6319", textColor: "white" },
     { name: "M", backgroundColor: "#FF6319", textColor: "white" },
-    { name: "G", backgroundColor: "#6CBE45", textColor: "white" },
-    { name: "J", backgroundColor: "#996633", textColor: "white" },
-    { name: "Z", backgroundColor: "#996633", textColor: "white" },
-    { name: "L", backgroundColor: "#A7A9AC", textColor: "white" },
     { name: "N", backgroundColor: "#FCCC0A", textColor: "white" },
     { name: "Q", backgroundColor: "#FCCC0A", textColor: "white" },
     { name: "R", backgroundColor: "#FCCC0A", textColor: "white" },
     { name: "S", backgroundColor: "#808183", textColor: "white" },
+    { name: "G", backgroundColor: "#6CBE45", textColor: "white" },
+    { name: "J", backgroundColor: "#996633", textColor: "white" },
+    { name: "L", backgroundColor: "#A7A9AC", textColor: "white" },
   ];
 
   const navigation = useNavigation();
@@ -69,7 +68,7 @@ function BrowseScreen() {
   };
 
   const getStationsInRows = () => {
-    const stationsPerRow = [3, 4, 3, 4, 4, 4];
+    const stationsPerRow = [3, 4, 3, 4, 4, 3];
     let stationIndex = 0;
 
     return stationsPerRow.map((count, rowIndex) => {

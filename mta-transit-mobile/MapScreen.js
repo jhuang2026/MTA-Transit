@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
+import Geolocation from 'react-native-geolocation-service';
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import stationsData from "./assets/stations.json";
@@ -18,7 +19,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import coordinatesData from "./assets/coordinates.json";
 import { useDispatch, useSelector } from 'react-redux';
 import { addToStarredList, removeFromStarredList } from './redux/actions';
-
+import { api } from "./components/api";
 
 export default function MapScreen() {
   const [info, setInfo] = useState({ data: [], updated: "" });
@@ -32,11 +33,24 @@ export default function MapScreen() {
   const [mapMoving, setMapMoving] = useState(false);
   const mapRef = useRef(null);
 
+  const checkGeolocationPermissionStatus = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
+      return granted;
+    } else if (Platform.OS === 'ios') {
+      const status = await Geolocation.requestAuthorization('whenInUse');
+      return status === 'granted';
+    }
+    return false;
+  };
+
   useEffect(() => {
     const fetchData = async (latitude, longitude) => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:5000/by-location?lat=${latitude}&lon=${longitude}`
+          `${api.base}/by-location?lat=${latitude}&lon=${longitude}`
         );
         const data = await response.json();
         console.log(data);
@@ -46,7 +60,37 @@ export default function MapScreen() {
       }
     };
 
+    const fetchLocationData = async () => {
+      const hasPermission = await checkGeolocationPermissionStatus();
+      if (hasPermission) {
+        // Function to get user's current location
+        const getCurrentLocation = () => {
+          Geolocation.getCurrentPosition(
+            position => {
+              const { latitude, longitude } = position.coords;
+              // Update the map center to the user's location
+              setMapCenter({
+                latitude,
+                longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              });
+            },
+            error => {
+              console.log('Error getting location:', error);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+          );
+          console.log("Getting current location...");
+        };
+      } else {
+        // Handle the case where permission is not granted
+      }
+    };
+
     fetchData(mapCenter.latitude, mapCenter.longitude);
+
+    fetchLocationData();
 
     const interval = setInterval(() => {
       fetchData(mapCenter.latitude, mapCenter.longitude);
@@ -531,6 +575,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 22,
     marginBottom: 5,
+    paddingRight: 50,
   },
   routesContainer: {
     marginTop: 10,
@@ -549,11 +594,12 @@ const styles = StyleSheet.create({
   directionTextContainer: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "flex-front",
+    alignItems: "flex-start",
     paddingRight: 10,
   },
   routeText: {
     marginBottom: 5,
+    paddingRight: 50,
   },
   timeContainer: {
     flexDirection: "row",

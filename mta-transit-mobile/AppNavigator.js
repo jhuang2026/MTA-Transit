@@ -61,13 +61,13 @@ function AppNavigator() {
           {() => <FavoritesScreen isDarkModeEnabled={isDarkModeEnabled} />}
         </Tab.Screen>
         <Tab.Screen name="Browse" component={BrowseStackScreen} />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Settings"
           component={SettingsScreen}
           screenOptions={{
             initialParams: { isDarkModeEnabled, handleDarkModeChange },
           }}
-        />
+        /> */}
       </Tab.Navigator>
     </NavigationContainer>
   );

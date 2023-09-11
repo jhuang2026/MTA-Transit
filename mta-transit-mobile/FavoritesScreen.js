@@ -5,15 +5,22 @@ import { api } from "./components/api";
 import stationsData from "./assets/stations.json";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { addToStarredList, removeFromStarredList } from './redux/actions';
+import { useNavigation } from "@react-navigation/native";
 
 function Station({ station, stopData, isDarkModeEnabled }) {
+
+  const navigation = useNavigation();
+  const toSpecificStation = (id) => {
+    navigation.navigate("SpecificStation", { state: id });
+  };
+
   const dispatch = useDispatch();
   const favorites = useSelector((state) => state.starredStationsReducer);
   const isFavorite = favorites.includes(station.id);
   
   const getCircleSize = (index) => {
     if (index === 1) {
-      return { width: 65, height: 65 };
+      return { width: 75, height: 75 };
     }
     return { width: 75, height: 75 };
   };
@@ -109,12 +116,19 @@ function Station({ station, stopData, isDarkModeEnabled }) {
           <MaterialCommunityIcons name="star" size={24} color={isFavorite ? "#ffd60a" : dynamicStyles.starColor} />
         </TouchableOpacity>
       </View>
-      <Text style={[styles.routeText, dynamicStyles.routeText]}>
-        Routes: {orderRoutes(station.routes).join(", ")}
-      </Text>
+      <View style={styles.stationRoutesContainer}>
+          {orderRoutes(station.routes).map((route, index) => (
+            <Text key={index} style={styles.stationRouteText}>
+              {route}
+            </Text>
+          ))}
+        </View>
 
       <View style={styles.routesContainer}>
-        <View style={styles.directionContainer}>
+        <TouchableOpacity 
+          style={styles.directionContainer} 
+          onPress={() => toSpecificStation(station.id)}
+        >
           <View style={styles.directionTextContainer}>
             <Text style={[styles.directionText, dynamicStyles.directionText]}>
               {stationsData[station.id]?.north_direction}
@@ -131,13 +145,18 @@ function Station({ station, stopData, isDarkModeEnabled }) {
                     borderColor: route.time ? getCircleColor(route.time, index) : "grey",
                     backgroundColor: index === 0 ? "white" : undefined,
                     zIndex: index === 0 ? 2 : 1,
-                    marginLeft: index === 1 ? -15 : undefined,
+                    marginLeft: index === 1 ? -13 : undefined,
                   },
                 ]}
               >
                 <Text style={[styles.timeText, dynamicStyles.timeText]}>
                   {route.time ? getRemainingTime(route.time) : "..."}
                 </Text>
+                <View style={styles.circleRouteCircle}>
+                    <Text style={styles.circleRouteText}>
+                      {route.route}
+                    </Text>
+                  </View>
               </View>
             ))}
             {stopData.N.length < 2 && (
@@ -152,9 +171,12 @@ function Station({ station, stopData, isDarkModeEnabled }) {
               </View>
             )}
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View style={styles.directionContainer}>
+        <TouchableOpacity 
+            style={styles.directionContainer} 
+            onPress={() => toSpecificStation(station.id)}
+        >
           <View style={styles.directionTextContainer}>
             <Text style={[styles.directionText, dynamicStyles.directionText]}>
               {stationsData[station.id]?.south_direction}
@@ -171,13 +193,18 @@ function Station({ station, stopData, isDarkModeEnabled }) {
                     borderColor: route.time ? getCircleColor(route.time, index) : "grey",
                     backgroundColor: index === 0 ? "white" : undefined,
                     zIndex: index === 0 ? 2 : 1,
-                    marginLeft: index === 1 ? -15 : undefined,
+                    marginLeft: index === 1 ? -13 : undefined,
                   },
                 ]}
               >
                 <Text style={[styles.timeText, dynamicStyles.timeText]}>
                   {route.time ? getRemainingTime(route.time) : "..."}
                 </Text>
+                <View style={styles.circleRouteCircle}>
+                    <Text style={styles.circleRouteText}>
+                      {route.route}
+                    </Text>
+                  </View>
               </View>
             ))}
             {stopData.S.length < 2 && (
@@ -192,7 +219,7 @@ function Station({ station, stopData, isDarkModeEnabled }) {
               </View>
             )}
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -217,16 +244,18 @@ function FavoritesScreen() {
   }, [favorites]);
 
   useEffect(() => {
-    fetchData();
-
-    const timer = setInterval(() => {
+    if (favorites.length > 0) {
       fetchData();
-    }, 1000);
 
-    return () => {
-      clearInterval(timer);
-    };
-  }, [fetchData]);
+      const timer = setInterval(() => {
+        fetchData();
+      }, 1000);
+
+      return () => {
+        clearInterval(timer);
+      };
+    }
+  }, [fetchData, favorites]);
 
   const dynamicStyles = useMemo(() => {
     return isDarkModeEnabled ? darkStyles : lightStyles;
@@ -281,17 +310,43 @@ const styles = StyleSheet.create({
   stationName: {
     fontWeight: "bold",
     fontSize: 22,
+    paddingRight: 50,
   },
   starButton: {
     position: "absolute",
     top: 10,
     right: 10,
   },
-  routeText: {
-    marginBottom: 5,
+  stationRoutesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 10,
+  },
+  stationRouteText: {
+    backgroundColor: "#f5f5f5",
+    padding: 5,
+    marginRight: 5,
+    borderRadius: 5,
   },
   routesContainer: {
     marginTop: 10,
+  },
+  circleRouteCircle: {
+    width: 25,
+    height: 25,
+    backgroundColor: '#232b2b',
+    borderRadius: 50,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: -12,
+    right: -1,
+  },
+  circleRouteText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   directionContainer: {
     flexDirection: "row",

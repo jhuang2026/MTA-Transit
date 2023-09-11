@@ -2,7 +2,7 @@
   "expo": {
     "name": "NYC Proximity",
     "slug": "NYCProximity",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,12 +17,16 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.noting.NYCProximity",
-      "buildNumber": "2"
+      "buildNumber": "5",
+      "runtimeVersion": "1.0.1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "runtimeVersion": {
+        "policy": "sdkVersion"
       }
     },
     "web": {
@@ -32,6 +36,9 @@
       "eas": {
         "projectId": "8f501e4a-8ae0-46f2-a4ab-b24de93374f2"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/8f501e4a-8ae0-46f2-a4ab-b24de93374f2"
     }
   }
 }

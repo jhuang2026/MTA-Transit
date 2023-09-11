@@ -16,9 +16,23 @@ const BrowseStack = createStackNavigator();
 
 const BrowseStackScreen = () => (
   <BrowseStack.Navigator screenOptions={{ headerShown: false }}>
-    <BrowseStack.Screen name="AllStations" component={BrowseScreen} />
+    <BrowseStack.Screen name="BrowseScreen" component={BrowseScreen} />
     <BrowseStack.Screen name="SpecificStation" component={SpecificStation} />
     <BrowseStack.Screen name="StationInfo" component={StationInfoScreen} />
+  </BrowseStack.Navigator>
+);
+
+const MapStackScreen = () => (
+  <BrowseStack.Navigator screenOptions={{ headerShown: false }}>
+    <BrowseStack.Screen name="MapScreen" component={MapScreen} />
+    <BrowseStack.Screen name="SpecificStation" component={SpecificStation} />
+  </BrowseStack.Navigator>
+);
+
+const FavoritesStackScreen = () => (
+  <BrowseStack.Navigator screenOptions={{ headerShown: false }}>
+    <BrowseStack.Screen name="FavoritesScreen" component={FavoritesScreen} />
+    <BrowseStack.Screen name="SpecificStation" component={SpecificStation} />
   </BrowseStack.Navigator>
 );
 
@@ -56,10 +70,8 @@ function AppNavigator() {
           },
         })}
       >
-        <Tab.Screen name="Map" component={MapScreen} />
-        <Tab.Screen name="Favorites">
-          {() => <FavoritesScreen isDarkModeEnabled={isDarkModeEnabled} />}
-        </Tab.Screen>
+        <Tab.Screen name="Map" component={MapStackScreen} />
+        <Tab.Screen name="Favorites" component={FavoritesStackScreen} />
         <Tab.Screen name="Browse" component={BrowseStackScreen} />
         {/* <Tab.Screen
           name="Settings"

@@ -20,6 +20,7 @@ import coordinatesData from "./assets/coordinates.json";
 import { useDispatch, useSelector } from 'react-redux';
 import { addToStarredList, removeFromStarredList } from './redux/actions';
 import { api } from "./components/api";
+import { useNavigation } from "@react-navigation/native";
 
 export default function MapScreen() {
   const [info, setInfo] = useState({ data: [], updated: "" });
@@ -32,6 +33,11 @@ export default function MapScreen() {
   const [userLocation, setUserLocation] = useState(null);
   const [mapMoving, setMapMoving] = useState(false);
   const mapRef = useRef(null);
+
+  const navigation = useNavigation();
+  const toSpecificStation = (id) => {
+    navigation.navigate("SpecificStation", { state: id });
+  };
 
   const checkGeolocationPermissionStatus = async () => {
     if (Platform.OS === 'android') {
@@ -53,7 +59,6 @@ export default function MapScreen() {
           `${api.base}/by-location?lat=${latitude}&lon=${longitude}`
         );
         const data = await response.json();
-        console.log(data);
         setInfo(data);
       } catch (error) {
         console.log("Error: " + error.message);
@@ -136,7 +141,7 @@ export default function MapScreen() {
     const isFavorite = favorites.includes(station.id);
     const getCircleSize = (index) => {
       if (index === 1) {
-        return { width: 65, height: 65 };
+        return { width: 75, height: 75 };
       }
       return { width: 75, height: 75 };
     };
@@ -240,12 +245,18 @@ export default function MapScreen() {
             />
           </TouchableOpacity>
         </View>
-        <Text style={styles.routeText}>
-          Routes: {orderRoutes(station.routes).join(", ")}
-        </Text>
-
+        <View style={styles.stationRoutesContainer}>
+          {orderRoutes(station.routes).map((route, index) => (
+            <Text key={index} style={styles.stationRouteText}>
+              {route}
+            </Text>
+          ))}
+        </View>
         <View style={styles.routesContainer}>
-          <View style={styles.directionContainer}>
+          <TouchableOpacity 
+            style={styles.directionContainer} 
+            onPress={() => toSpecificStation(station.id)}
+          >
             <View style={styles.directionTextContainer}>
               <Text style={styles.directionText}>
                 {stationsData[station.id]?.north_direction}
@@ -264,13 +275,18 @@ export default function MapScreen() {
                         : "grey",
                       backgroundColor: index === 0 ? "white" : undefined,
                       zIndex: index === 0 ? 2 : 1,
-                      marginLeft: index === 1 ? -15 : undefined,
+                      marginLeft: index === 1 ? -13 : undefined,
                     },
                   ]}
                 >
                   <Text style={styles.timeText}>
                     {route.time ? getRemainingTime(route.time) : "..."}
                   </Text>
+                  <View style={styles.circleRouteCircle}>
+                    <Text style={styles.circleRouteText}>
+                      {route.route}
+                    </Text>
+                  </View>
                 </View>
               ))}
               {stopData.N.length < 2 && (
@@ -285,9 +301,12 @@ export default function MapScreen() {
                 </View>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.directionContainer}>
+          <TouchableOpacity 
+            style={styles.directionContainer} 
+            onPress={() => toSpecificStation(station.id)}
+          >
             <View style={styles.directionTextContainer}>
               <Text style={styles.directionText}>
                 {stationsData[station.id]?.south_direction}
@@ -306,13 +325,18 @@ export default function MapScreen() {
                         : "grey",
                       backgroundColor: index === 0 ? "white" : undefined,
                       zIndex: index === 0 ? 2 : 1,
-                      marginLeft: index === 1 ? -15 : undefined,
+                      marginLeft: index === 1 ? -13 : undefined,
                     },
                   ]}
                 >
                   <Text style={styles.timeText}>
                     {route.time ? getRemainingTime(route.time) : "..."}
                   </Text>
+                  <View style={styles.circleRouteCircle}>
+                    <Text style={styles.circleRouteText}>
+                      {route.route}
+                    </Text>
+                  </View>
                 </View>
               ))}
               {stopData.S.length < 2 && (
@@ -327,7 +351,7 @@ export default function MapScreen() {
                 </View>
               )}
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -597,9 +621,16 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     paddingRight: 10,
   },
-  routeText: {
-    marginBottom: 5,
-    paddingRight: 50,
+  stationRoutesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 10,
+  },
+  stationRouteText: {
+    backgroundColor: "#f5f5f5",
+    padding: 5,
+    marginRight: 5,
+    borderRadius: 5,
   },
   timeContainer: {
     flexDirection: "row",
@@ -621,6 +652,24 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 18,
+    position: "absolute",
+  },
+  circleRouteCircle: {
+    width: 25,
+    height: 25,
+    backgroundColor: '#232b2b',
+    borderRadius: 50,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: -12,
+    right: -1,
+  },
+  circleRouteText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   zoomButton: {
     width: 40,

@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { api } from "./components/api";
 import stationsData from "./assets/stations.json";
-import { useSelector } from "react-redux";
-import { Ionicons } from "@expo/vector-icons";
+import { useSelector, useDispatch } from "react-redux";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { addToStarredList, removeFromStarredList } from './redux/actions';
 
 const SpecificStation = ({ route }) => {
   const { state } = route.params;
   const [data, setData] = useState([]);
   const isDarkModeEnabled = useSelector((state) => state.darkModeReducer);
+
+  const dispatch = useDispatch();
+  const favorites = useSelector((state) => state.starredStationsReducer);
+  const isFavorite = favorites.includes(state);
 
   const dynamicStyles = {
     container: isDarkModeEnabled ? darkStyles.container : lightStyles.container,
@@ -95,12 +100,28 @@ const SpecificStation = ({ route }) => {
     };
   }, [state]);
 
+  const toggleStar = (stationId) => {
+    if (isFavorite) {
+      console.log("Removing station " + stationId + " from favorites");
+      // Dispatch an action to remove the station from the Redux store
+      dispatch(removeFromStarredList(stationId));
+    } else {
+      console.log("Adding station " + stationId + " to favorites");
+      // Dispatch an action to add the station to the Redux store
+      dispatch(addToStarredList(stationId));
+    }
+  };  
+
   return (
     <View style={[styles.container, dynamicStyles.container]}>
       <Text style={[styles.title, dynamicStyles.title]}>Specific Station</Text>
 
       {data.map((station, index) => (
         <View key={index} style={styles.stationContainer}>
+
+          <TouchableOpacity onPress={() => toggleStar(state)} style={styles.starButton}>
+            <MaterialCommunityIcons name="star" size={24} color={isFavorite ? "#ffd60a" : dynamicStyles.starColor} />
+          </TouchableOpacity>
           <Text style={[styles.stationName, dynamicStyles.stationName]}>
             {station.name}
           </Text>
@@ -195,6 +216,11 @@ const styles = StyleSheet.create({
   },
   routeTimeText: {
     marginBottom: 3,
+  },
+  starButton: {
+    position: "absolute",
+    top: 15,
+    right: 15,
   },
 });
 

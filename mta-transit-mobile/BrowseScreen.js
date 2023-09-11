@@ -109,7 +109,50 @@ function BrowseScreen() {
       : Object.entries(stationsData).map(([id, station]) => ({
           id,
           name: station.name,
+          routes: station.routes,
         }));
+  };
+
+  const orderRoutes = (routes) => {
+    const orderedRoutes = [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "6X",
+      "7",
+      "7X",
+      "A",
+      "C",
+      "E",
+      "N",
+      "Q",
+      "R",
+      "W",
+      "B",
+      "D",
+      "F",
+      "FS",
+      "M",
+      "L",
+      "G",
+      "J",
+      "Z",
+      "H",
+      "S",
+      "SI",
+      "SS",
+    ];
+
+    routes.sort((a, b) => {
+      const indexA = orderedRoutes.indexOf(a);
+      const indexB = orderedRoutes.indexOf(b);
+      return indexA - indexB;
+    });
+
+    return routes;
   };
 
   const clearSearch = () => {
@@ -145,10 +188,20 @@ function BrowseScreen() {
               <TouchableOpacity
                 key={station.id}
                 onPress={() => toSpecificStation(station.id)}
+                style={styles.eachStop}
               >
-                <Text style={[styles.stationName, dynamicStyles.stationName]}>
-                  {station.name}
-                </Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={[styles.stationName, dynamicStyles.stationName]}>
+                    {station.name}
+                  </Text>
+                  <View style={styles.stationRoutesContainer}>
+                    {orderRoutes(station.routes).map((route, index) => (
+                      <Text key={index} style={styles.stationRouteText}>
+                        {route}
+                      </Text>
+                    ))}
+                  </View>
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -164,14 +217,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingBottom: 0,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingLeft: 10,
-    paddingVertical: 10,
+    paddingVertical: 15,
   },
   title: {
     fontSize: 24,
@@ -217,8 +270,23 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   stationName: {
+    paddingLeft: 3,
     fontSize: 20,
-    marginBottom: 10,
+    width: "60%",
+    marginRight: 10,
+  },
+  stationRoutesContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    width: "40%",
+    justifyContent: "flex-end",
+    paddingRight: 12,
+    gap: 5,
+  },
+  stationRouteText: {
+    backgroundColor: "#f5f5f5",
+    padding: 5,
+    borderRadius: 10,
   },
   clearButtonContainer: {
     position: "absolute",
@@ -230,6 +298,14 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: "#888",
     fontSize: 16,
+  },
+  eachStop: {
+    backgroundColor: "#fff",
+    marginBottom: 10,
+    padding: 5,
+    borderRadius: 10,
+    // make it so that overflow will expand downwards
+    overflow: "visible",
   },
 });
 

@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
   stationName: {
     fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 5,
   },
   stationRoutesContainer: {
     flexDirection: "row",
@@ -190,7 +191,6 @@ const styles = StyleSheet.create({
     padding: 5,
     marginRight: 5,
     borderRadius: 5,
-    marginTop: 5,
   },
   stationData: {
     marginTop: 10,

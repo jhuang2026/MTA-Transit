@@ -27,8 +27,8 @@ export default function MapScreen() {
   const [mapCenter, setMapCenter] = useState({
     latitude: 40.758,
     longitude: -73.9855,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
+    latitudeDelta: 0.0922/2.5,
+    longitudeDelta: 0.0421/2.5,
   });
   const [userLocation, setUserLocation] = useState(null);
   const [mapMoving, setMapMoving] = useState(false);
@@ -77,8 +77,8 @@ export default function MapScreen() {
               setMapCenter({
                 latitude,
                 longitude,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
+                latitudeDelta: 0.0922/2.5,
+                longitudeDelta: 0.0421/2.5,
               });
             },
             error => {
@@ -455,7 +455,7 @@ export default function MapScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text>Elapsed Time: {getElapsedTime()}</Text>
+        <Text style={styles.elapsedTime}>Elapsed Time: {getElapsedTime()}</Text>
         <View style={styles.mapContainer}>
           <MapView
             ref={mapRef}
@@ -522,14 +522,14 @@ export default function MapScreen() {
             />
           </TouchableOpacity>
         </View>
-        <View style={styles.zoomButtonContainer}>
+        {/* <View style={styles.zoomButtonContainer}>
           <TouchableOpacity style={styles.zoomButton} onPress={zoomIn}>
             <MaterialCommunityIcons name="plus" size={24} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
             <MaterialCommunityIcons name="minus" size={24} color="white" />
           </TouchableOpacity>
-        </View>
+        </View> */}
         {info &&
           info.data.map((stop) => (
             <Station key={stop.id} station={stop} stopData={stop} />
@@ -684,6 +684,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
+  },
+  elapsedTime: {
+    marginTop: -20,
+    paddingBottom: 4,
+    paddingLeft: 5,
+    fontWeight: "500",
   },
 });
 

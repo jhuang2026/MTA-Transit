@@ -140,9 +140,16 @@ const SpecificStation = ({ route }) => {
             </Text>
             {station.N.length > 0 ? (
               station.N.slice(0, 5).map((item, index) => (
-                <Text key={index} style={[styles.routeTimeText, dynamicStyles.routeTimeText]}>
-                  Route: {item.route}, Time: {getRemainingTime(item.time)}
-                </Text>
+                <View style={styles.eachStopData} key={index}>
+                  <View style={styles.circleRouteCircle}>
+                    <Text style={styles.circleRouteText}>
+                      {item.route}
+                    </Text>
+                  </View>
+                  <Text key={index} style={styles.routeTimeText}>
+                    {getRemainingTime(item.time)}
+                  </Text>
+                </View>
               ))
             ) : (
               <Text>No upcoming available data for North direction.</Text>
@@ -155,9 +162,16 @@ const SpecificStation = ({ route }) => {
             </Text>
             {station.S.length > 0 ? (
               station.S.slice(0, 5).map((item, index) => (
-                <Text key={index} style={[styles.routeTimeText, dynamicStyles.routeTimeText]}>
-                  Route: {item.route}, Time: {getRemainingTime(item.time)}
-                </Text>
+                <View style={styles.eachStopData} key={index}>
+                  <View style={styles.circleRouteCircle}>
+                    <Text style={styles.circleRouteText}>
+                      {item.route}
+                    </Text>
+                  </View>
+                  <Text key={index} style={styles.routeTimeText}>
+                    {getRemainingTime(item.time)}
+                  </Text>
+                </View>
               ))
             ) : (
               <Text>No upcoming available data for South direction.</Text>
@@ -192,13 +206,15 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   stationName: {
-    fontSize: 18,
     fontWeight: "bold",
+    fontSize: 22,
+    marginBottom: 5,
+    paddingRight: 50,
   },
   stationRoutesContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginBottom: 10,
+    marginBottom: -5,
   },
   stationRouteText: {
     backgroundColor: "#f5f5f5",
@@ -208,19 +224,46 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   stationData: {
-    marginTop: 10,
+    marginTop: 25,
+    display: "flex",
+    gap: 10,
   },
   directionText: {
     fontWeight: "bold",
-    marginBottom: 5,
+    fontSize: 18,
   },
   routeTimeText: {
-    marginBottom: 3,
+    marginLeft: 30,
+    fontSize: 16,
+    fontWeight: 400,
   },
   starButton: {
     position: "absolute",
     top: 15,
     right: 15,
+    zIndex: 1,
+  },
+  circleRouteCircle: {
+    width: 25,
+    height: 25,
+    backgroundColor: '#232b2b',
+    borderRadius: 50,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+  },
+  circleRouteText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  eachStopData: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginLeft: 5,
   },
 });
 

@@ -2,7 +2,7 @@
   "expo": {
     "name": "NYC Proximity",
     "slug": "NYCProximity",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.noting.NYCProximity",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "runtimeVersion": "1.0.1"
     },
     "android": {

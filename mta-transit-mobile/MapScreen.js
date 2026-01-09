@@ -27,11 +27,12 @@ export default function MapScreen() {
   const [mapCenter, setMapCenter] = useState({
     latitude: 40.758,
     longitude: -73.9855,
-    latitudeDelta: 0.0922/2.5,
-    longitudeDelta: 0.0421/2.5,
+    latitudeDelta: 0.0922/3.2,
+    longitudeDelta: 0.0421/3.2,
   });
   const [userLocation, setUserLocation] = useState(null);
   const [mapMoving, setMapMoving] = useState(false);
+  const [initialSetupDone, setInitialSetupDone] = useState(false);
   const mapRef = useRef(null);
 
   const navigation = useNavigation();
@@ -40,28 +41,19 @@ export default function MapScreen() {
   };
 
   const checkGeolocationPermissionStatus = async () => {
-    if (Platform.OS === 'android') {
-      const granted = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
-      return granted;
-    } else if (Platform.OS === 'ios') {
-      const status = await Geolocation.requestAuthorization('whenInUse');
-      return status === 'granted';
-    }
-    return false;
+    const status = await Geolocation.requestAuthorization('whenInUse');
+    return status === 'granted';
   };
 
   useEffect(() => {
     const fetchData = async (latitude, longitude) => {
       try {
-        const response = await fetch(
-          `${api.base}/by-location?lat=${latitude}&lon=${longitude}`
-        );
+        const url = `${api.base}/by-location?lat=${latitude}&lon=${longitude}`;
+        const response = await fetch(url);
         const data = await response.json();
         setInfo(data);
       } catch (error) {
-        console.log("Error: " + error.message);
+        console.error("Error fetching data:", error.message);
       }
     };
 
@@ -73,27 +65,40 @@ export default function MapScreen() {
           Geolocation.getCurrentPosition(
             position => {
               const { latitude, longitude } = position.coords;
-              // Update the map center to the user's location
-              setMapCenter({
-                latitude,
-                longitude,
-                latitudeDelta: 0.0922/2.5,
-                longitudeDelta: 0.0421/2.5,
-              });
+              // If initial setup is not done, set the initial mapCenter
+              if (!initialSetupDone) {
+                setMapCenter({
+                  latitude,
+                  longitude,
+                  latitudeDelta: 0.0922/3.2,
+                  longitudeDelta: 0.0421/3.2,
+                });
+                // Mark the initial setup as done
+                setInitialSetupDone(true);
+              }
+              // Set the userLocation only if it's not already set
+              if (!userLocation) {
+                setUserLocation({
+                  latitude,
+                  longitude,
+                });
+              }
+              // Fetch data immediately after getting location
+              fetchData(latitude, longitude);
             },
             error => {
-              console.log('Error getting location:', error);
+              // Fetch data for default location if location fails
+              fetchData(mapCenter.latitude, mapCenter.longitude);
             },
             { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
           );
-          console.log("Getting current location...");
         };
+        getCurrentLocation();
       } else {
-        // Handle the case where permission is not granted
+        // Handle the case where permission is not granted - use default location
+        fetchData(mapCenter.latitude, mapCenter.longitude);
       }
     };
-
-    fetchData(mapCenter.latitude, mapCenter.longitude);
 
     fetchLocationData();
 
@@ -139,6 +144,23 @@ export default function MapScreen() {
     const dispatch = useDispatch();
     const favorites = useSelector((state) => state.starredStationsReducer);
     const isFavorite = favorites.includes(station.id);
+    
+    const getRouteColor = (route) => {
+      const routeColors = {
+        "1": "#EE352E", "2": "#EE352E", "3": "#EE352E",
+        "4": "#00933C", "5": "#00933C", "6": "#00933C", "6X": "#00933C",
+        "7": "#B933AD", "7X": "#B933AD",
+        "A": "#0039A6", "C": "#0039A6", "E": "#0039A6",
+        "B": "#FF6319", "D": "#FF6319", "F": "#FF6319", "FX": "#FF6319", "M": "#FF6319",
+        "N": "#FCCC0A", "Q": "#FCCC0A", "R": "#FCCC0A", "W": "#FCCC0A",
+        "S": "#808183",
+        "G": "#6CBE45",
+        "J": "#996633", "Z": "#996633",
+        "L": "#A7A9AC",
+      };
+      return routeColors[route] || "#232b2b";
+    };
+
     const getCircleSize = (index) => {
       if (index === 1) {
         return { width: 75, height: 75 };
@@ -221,10 +243,8 @@ export default function MapScreen() {
 
     const toggleStar = (stationId) => {
       if (isFavorite) {
-        console.log("Removing star for station " + stationId);
         dispatch(removeFromStarredList(stationId));
       } else {
-        console.log("Adding star for station " + stationId);
         dispatch(addToStarredList(stationId));
       }
     };    
@@ -282,7 +302,7 @@ export default function MapScreen() {
                   <Text style={styles.timeText}>
                     {route.time ? getRemainingTime(route.time) : "..."}
                   </Text>
-                  <View style={styles.circleRouteCircle}>
+                  <View style={[styles.circleRouteCircle, { backgroundColor: getRouteColor(route.route) }]}>
                     <Text style={styles.circleRouteText}>
                       {route.route}
                     </Text>
@@ -332,7 +352,7 @@ export default function MapScreen() {
                   <Text style={styles.timeText}>
                     {route.time ? getRemainingTime(route.time) : "..."}
                   </Text>
-                  <View style={styles.circleRouteCircle}>
+                  <View style={[styles.circleRouteCircle, { backgroundColor: getRouteColor(route.route) }]}>
                     <Text style={styles.circleRouteText}>
                       {route.route}
                     </Text>
@@ -657,7 +677,6 @@ const styles = StyleSheet.create({
   circleRouteCircle: {
     width: 25,
     height: 25,
-    backgroundColor: '#232b2b',
     borderRadius: 50,
     display: 'flex',
     justifyContent: 'center',

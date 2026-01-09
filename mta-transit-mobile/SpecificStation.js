@@ -81,6 +81,22 @@ const SpecificStation = ({ route }) => {
     return routes;
   };
 
+  const getRouteColor = (route) => {
+    const routeColors = {
+      '1': '#EE352E', '2': '#EE352E', '3': '#EE352E',
+      '4': '#00933C', '5': '#00933C', '6': '#00933C', '6X': '#00933C',
+      '7': '#B933AD', '7X': '#B933AD',
+      'A': '#0039A6', 'C': '#0039A6', 'E': '#0039A6',
+      'B': '#FF6319', 'D': '#FF6319', 'F': '#FF6319', 'FX': '#FF6319', 'M': '#FF6319',
+      'N': '#FCCC0A', 'Q': '#FCCC0A', 'R': '#FCCC0A', 'W': '#FCCC0A',
+      'S': '#808183',
+      'G': '#6CBE45',
+      'J': '#996633', 'Z': '#996633',
+      'L': '#A7A9AC',
+    };
+    return routeColors[route] || '#232b2b';
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -114,7 +130,6 @@ const SpecificStation = ({ route }) => {
 
   return (
     <View style={[styles.container, dynamicStyles.container]}>
-      <Text style={[styles.title, dynamicStyles.title]}>Specific Station</Text>
 
       {data.map((station, index) => (
         <View key={index} style={styles.stationContainer}>
@@ -139,9 +154,9 @@ const SpecificStation = ({ route }) => {
               North Direction: {stationsData[station.id]?.north_direction}
             </Text>
             {station.N.length > 0 ? (
-              station.N.slice(0, 5).map((item, index) => (
+              station.N.slice(0, 8).map((item, index) => (
                 <View style={styles.eachStopData} key={index}>
-                  <View style={styles.circleRouteCircle}>
+                  <View style={[styles.circleRouteCircle, { backgroundColor: getRouteColor(item.route) }]}>
                     <Text style={styles.circleRouteText}>
                       {item.route}
                     </Text>
@@ -161,9 +176,9 @@ const SpecificStation = ({ route }) => {
               South Direction: {stationsData[station.id]?.south_direction}
             </Text>
             {station.S.length > 0 ? (
-              station.S.slice(0, 5).map((item, index) => (
+              station.S.slice(0, 8).map((item, index) => (
                 <View style={styles.eachStopData} key={index}>
-                  <View style={styles.circleRouteCircle}>
+                  <View style={[styles.circleRouteCircle, { backgroundColor: getRouteColor(item.route) }]}>
                     <Text style={styles.circleRouteText}>
                       {item.route}
                     </Text>
@@ -246,7 +261,6 @@ const styles = StyleSheet.create({
   circleRouteCircle: {
     width: 25,
     height: 25,
-    backgroundColor: '#232b2b',
     borderRadius: 50,
     display: 'flex',
     justifyContent: 'center',

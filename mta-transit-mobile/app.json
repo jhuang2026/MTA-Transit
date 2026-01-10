@@ -2,7 +2,7 @@
   "expo": {
     "name": "NYC Proximity",
     "slug": "NYCProximity",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,8 +17,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.noting.NYCProximity",
-      "buildNumber": "19",
-      "runtimeVersion": "1.0.6",
+      "buildNumber": "23",
+      "runtimeVersion": "1.0.7",
+      "deploymentTarget": "13.0",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app needs your location to show nearby subway stations and real-time transit information.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs your location to show nearby subway stations and real-time transit information."
